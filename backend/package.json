@@ -1,0 +1,30 @@
+{
+  "name": "grocodex-backend",
+  "version": "0.1.0",
+  "description": "Backend for Grocodex (Express, SQLite, migrations)",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "migrate": "npx knex migrate:latest --knexfile ../knexfile.js",
+    "migrate:rollback": "npx knex migrate:rollback --knexfile ../knexfile.js"
+  },
+  "keywords": [
+    "grocodex",
+    "backend",
+    "sqlite",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^9.0.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
