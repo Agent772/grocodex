@@ -79,7 +79,6 @@ CREATE TABLE grocery_item (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INTEGER REFERENCES product(id),
     container_id INTEGER REFERENCES container(id),
-    added_by_user_id INTEGER REFERENCES user(id),
     name TEXT NOT NULL,
     unit TEXT,
     quantity REAL,

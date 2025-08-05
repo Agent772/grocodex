@@ -1,26 +1,36 @@
+import 'dotenv/config';
 import express from 'express';
-import db from './db';
+import userRoutes from './routes/userRoutes';
+import productRoutes from './routes/productRoutes';
+import groceryItemRoutes from './routes/groceryItemRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+
 app.use(express.json());
+
+
+// User-related routes
+
+// User-related routes
+app.use('/api', userRoutes);
+// Product-related routes
+app.use('/api/products', productRoutes);
+// Grocery item-related routes
+app.use('/api/grocery-items', groceryItemRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Example: List all users
-app.get('/api/users', async (_req, res) => {
-  try {
-    const users = await db('user').select('id', 'username', 'created_at');
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch users' });
-  }
-});
 
-app.listen(PORT, () => {
-  console.log(`Grocodex backend running on port ${PORT}`);
-});
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Grocodex backend running on port ${PORT}`);
+  });
+}
+
+export default app;

@@ -5,6 +5,7 @@ node_modules/
 
 # SQLite database
 backend/dev.sqlite3
+backend/test.sqlite*
 
 # Build output
 dist/

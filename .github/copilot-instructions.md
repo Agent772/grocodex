@@ -11,6 +11,10 @@ Grocodex is a self-hosted, open source, privacy-first PWA for tracking grocery i
 - Use RESTful API design.
 - Prioritize offline support and data sync.
 - Use Open Food Facts API for barcode lookups only; do not store or transmit user-specific data externally.
+- Use environment variables for configuration (e.g., database paths, API keys).
+- Ensure the app can later be extended with plugins or additional features without major refactoring.
+- Ensure the app is production-ready with proper error handling and user feedback.
+- Ensure a maintainable and modular code structure.
 
 ## Frontend
 - Use React functional components and hooks.
@@ -20,6 +24,9 @@ Grocodex is a self-hosted, open source, privacy-first PWA for tracking grocery i
 - Implement barcode scanning using QuaggaJS or zxing-js.
 - Provide a UI for pasting/importing shopping lists and matching against inventory.
 - Do not include analytics, tracking, or telemetry.
+- Ensure the app is responsive and works well on mobile devices.
+- Use localStorage or IndexedDB for storing user preferences and settings.
+- Use i18n for localization (default to English, support at least one other language).
 
 ## Backend
 - Use Express or Fastify with TypeScript.
@@ -28,6 +35,7 @@ Grocodex is a self-hosted, open source, privacy-first PWA for tracking grocery i
 - Implement endpoints for barcode lookup (proxy to Open Food Facts if needed).
 - Serve the frontend build and API from the same Docker container.
 - Do not log or transmit user data externally.
+- Return error keys to then be translated on the frontend (e.g., `ERR_AUTH_REQUIRED`, `ERR_INVALID_USER`).
 
 ## DevOps
 - Provide a Dockerfile for easy deployment.
