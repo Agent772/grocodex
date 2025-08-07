@@ -22,7 +22,6 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const item = await createGroceryItem({
       ...parse.data,
-      added_by_user_id: user.id,
       created_by_user_id: user.id,
       updated_by_user_id: user.id
     });

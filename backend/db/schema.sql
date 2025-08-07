@@ -92,7 +92,7 @@ CREATE TABLE grocery_item (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by_user_id INTEGER REFERENCES user(id),
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_by_user_id INTEGER REFERENCES user(id),
+    updated_by_user_id INTEGER REFERENCES user(id)
 );
 
 -- ShoppingList: one per household, can be extended for multiple lists

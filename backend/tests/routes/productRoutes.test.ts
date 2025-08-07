@@ -18,8 +18,20 @@ async function getAuthToken() {
 
 describe('Product Routes', () => {
   let token: string;
-  beforeAll(async () => {
-    token = await getAuthToken();
+  beforeEach(async () => {
+    await db('grocery_item').truncate();
+    await db('product').truncate();
+    await db('user').truncate();
+    // Create user and get fresh token after truncation
+    let user = await db('user').where({ username: 'testuser' }).first();
+    if (!user) {
+      // Use a valid bcrypt hash for 'testpassword' (hash: $2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw)
+      const validHash = '$2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw';
+      const [id] = await db('user').insert({ username: 'testuser', password_hash: validHash });
+      user = await db('user').where({ id }).first();
+    }
+    token = signJwt(user.id);
+    token = `Bearer ${token}`;
   });
 
   afterAll(async () => {
@@ -37,14 +49,23 @@ describe('Product Routes', () => {
   });
 
   it('should not delete a product with grocery items', async () => {
+    // Ensure user exists and fetch id
+    let user = await db('user').where({ username: 'testuser' }).first();
+    if (!user) {
+      const validHash = '$2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw';
+      const [id] = await db('user').insert({ username: 'testuser', password_hash: validHash });
+      user = await db('user').where({ id }).first();
+    }
     // Create product
     const prodRes = await request(app)
       .post('/api/products')
       .set('Authorization', token)
       .send({ name: 'Product With Items' });
     const productId = prodRes.body.id;
-    // Create grocery item for this product
-    await db('grocery_item').insert({ name: 'Item', product_id: productId });
+    // Create a container for the grocery item
+    const [containerId] = await db('container').insert({ name: 'Test Container', created_by_user_id: user.id, updated_by_user_id: user.id });
+    // Create grocery item for this product with all required fields
+    await db('grocery_item').insert({ name: 'Item', product_id: productId, container_id: containerId, unit: 'pcs', quantity: 1, created_by_user_id: user.id, updated_by_user_id: user.id });
     // Try to delete product
     const delRes = await request(app)
       .delete(`/api/products/${productId}`)
@@ -54,14 +75,23 @@ describe('Product Routes', () => {
   });
 
   it('should cascade delete product and its grocery items', async () => {
+    // Ensure user exists and fetch id
+    let user = await db('user').where({ username: 'testuser' }).first();
+    if (!user) {
+      const validHash = '$2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw';
+      const [id] = await db('user').insert({ username: 'testuser', password_hash: validHash });
+      user = await db('user').where({ id }).first();
+    }
     // Create product
     const prodRes = await request(app)
       .post('/api/products')
       .set('Authorization', token)
       .send({ name: 'Cascade Product' });
     const productId = prodRes.body.id;
-    // Create grocery item for this product
-    await db('grocery_item').insert({ name: 'Cascade Item', product_id: productId });
+    // Create a container for the grocery item
+    const [containerId] = await db('container').insert({ name: 'Cascade Container', created_by_user_id: user.id, updated_by_user_id: user.id });
+    // Create grocery item for this product with all required fields
+    await db('grocery_item').insert({ name: 'Cascade Item', product_id: productId, container_id: containerId, unit: 'pcs', quantity: 1, created_by_user_id: user.id, updated_by_user_id: user.id });
     // Cascade delete
     const delRes = await request(app)
       .delete(`/api/products/${productId}/cascade`)
@@ -74,6 +104,75 @@ describe('Product Routes', () => {
     const item = await db('grocery_item').where({ product_id: productId }).first();
     expect(item).toBeUndefined();
   });
+  it('should list products with and without filters', async () => {
+    // Create products
+    await request(app).post('/api/products').set('Authorization', token).send({ name: 'Apple' });
+    await request(app).post('/api/products').set('Authorization', token).send({ name: 'Banana' });
+    // List all
+    let res = await request(app).get('/api/products').set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThanOrEqual(2);
+    // Filter by name
+    res = await request(app).get('/api/products?name=Apple').set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(res.body.some((p: any) => p.name === 'Apple')).toBe(true);
+    // Pagination
+    res = await request(app).get('/api/products?limit=1').set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
+  });
 
-  // Add more tests for validation, filtering, pagination, etc.
+  it('should fetch a single product by id', async () => {
+    const createRes = await request(app).post('/api/products').set('Authorization', token).send({ name: 'Single Product' });
+    const id = createRes.body.id;
+    let res = await request(app).get(`/api/products/${id}`).set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe('Single Product');
+    // Not found
+    res = await request(app).get('/api/products/99999').set('Authorization', token);
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('ERR_PRODUCT_NOT_FOUND');
+    // Invalid ID
+    res = await request(app).get('/api/products/abc').set('Authorization', token);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('ERR_INVALID_ID');
+  });
+
+  it('should update a product', async () => {
+    const createRes = await request(app).post('/api/products').set('Authorization', token).send({ name: 'ToUpdate' });
+    const id = createRes.body.id;
+    let res = await request(app).put(`/api/products/${id}`).set('Authorization', token).send({ name: 'Updated Product' });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe('Updated Product');
+    // Validation error
+    res = await request(app).put(`/api/products/${id}`).set('Authorization', token).send({ name: '' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('ERR_VALIDATION');
+    // Not found
+    res = await request(app).put('/api/products/99999').set('Authorization', token).send({ name: 'Nope' });
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('ERR_PRODUCT_NOT_FOUND');
+  });
+
+  it('should delete a product (if not in use)', async () => {
+    const createRes = await request(app).post('/api/products').set('Authorization', token).send({ name: 'ToDelete' });
+    const id = createRes.body.id;
+    let res = await request(app).delete(`/api/products/${id}`).set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    // Not found
+    res = await request(app).delete('/api/products/99999').set('Authorization', token);
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('ERR_PRODUCT_NOT_FOUND');
+    // Invalid ID
+    res = await request(app).delete('/api/products/abc').set('Authorization', token);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('ERR_INVALID_ID');
+  });
+
+  it('should return validation error for invalid product creation', async () => {
+    const res = await request(app).post('/api/products').set('Authorization', token).send({ name: '' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('ERR_VALIDATION');
+  });
 });
