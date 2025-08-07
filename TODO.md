@@ -17,7 +17,7 @@
   - [x] CRUD for containers (nested)
   - [X] CRUD for Stores and StoreLocations + Search
   - [x] CRUD for Categories + Search
-  - [ ] Attach items to containers
+  - [x] Attach items to containers
   - [ ] Expiration tracking
 
 - **Shopping List**
@@ -37,10 +37,10 @@
 
 ## Models/Database
 - [x] User
-- [ ] Inventory item
-- [ ] Container
+- [x] Inventory item
+- [x] Container
 - [ ] Shopping list
-- [ ] Product
+- [x] Product
 
 ## DevOps & Deployment
 - [x] Environment variable support (`dotenv`)
@@ -52,7 +52,7 @@
 
 ## Documentation & Testing
 - [x] API documentation (`API_DOC.md`)
-- [ ] Integration tests for endpoints
+- [x] Integration tests for endpoints
 - [ ] Setup/usage/deployment docs
 
 ## Future/Ideas

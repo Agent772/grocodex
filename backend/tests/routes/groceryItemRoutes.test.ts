@@ -22,6 +22,63 @@ async function getAuthToken() {
 }
 
 describe('Grocery Item Routes', () => {
+  it('should create a grocery item attached to a container', async () => {
+    // Create a product
+    const prodRes = await request(app)
+      .post('/api/products')
+      .set('Authorization', token)
+      .send({ name: 'Yogurt', created_by_user_id: global.testUserId, updated_by_user_id: global.testUserId });
+    const productId = prodRes.body.id;
+    const res = await request(app)
+      .post('/api/grocery-items')
+      .set('Authorization', token)
+      .send({ name: 'Yogurt Item', product_id: productId, container_id: containerId, quantity: 1 });
+    expect(res.status).toBe(201);
+    expect(res.body.container_id).toBe(containerId);
+  });
+
+  it('should update a grocery item to move it to another container', async () => {
+    // Create another container
+    const contRes = await db('container').insert({ name: 'Freezer', created_by_user_id: global.testUserId, updated_by_user_id: global.testUserId });
+    const newContainerId = Array.isArray(contRes) ? contRes[0] : contRes;
+    // Create a product and grocery item
+    const prodRes = await request(app)
+      .post('/api/products')
+      .set('Authorization', token)
+      .send({ name: 'Butter', created_by_user_id: global.testUserId, updated_by_user_id: global.testUserId });
+    const productId = prodRes.body.id;
+    const createRes = await request(app)
+      .post('/api/grocery-items')
+      .set('Authorization', token)
+      .send({ name: 'Butter Item', product_id: productId, container_id: containerId, quantity: 1 });
+    const id = createRes.body.id;
+    // Move item
+    const res = await request(app)
+      .put(`/api/grocery-items/${id}`)
+      .set('Authorization', token)
+      .send({ container_id: newContainerId });
+    expect(res.status).toBe(200);
+    expect(res.body.container_id).toBe(newContainerId);
+  });
+
+  it('should list all grocery items in a container', async () => {
+    // Create a product and grocery item in container
+    const prodRes = await request(app)
+      .post('/api/products')
+      .set('Authorization', token)
+      .send({ name: 'Cheese', created_by_user_id: global.testUserId, updated_by_user_id: global.testUserId });
+    const productId = prodRes.body.id;
+    await request(app)
+      .post('/api/grocery-items')
+      .set('Authorization', token)
+      .send({ name: 'Cheese Item', product_id: productId, container_id: containerId, quantity: 1 });
+    const res = await request(app)
+      .get(`/api/grocery-items?container_id=${containerId}`)
+      .set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some((item: any) => item.name === 'Cheese Item')).toBe(true);
+  });
   let token: string;
   let containerId: number;
   beforeEach(async () => {

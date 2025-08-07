@@ -34,11 +34,14 @@ router.post('/', requireAuth, async (req, res) => {
 
 // Read all grocery items with optional filtering by product_id or product name, and pagination
 router.get('/', requireAuth, async (req, res) => {
-  const { product_id, name, limit, offset } = req.query;
+  const { product_id, name, container_id, limit, offset } = req.query;
   try {
     let query = require('../db').default('grocery_item');
     if (product_id) {
       query = query.where('product_id', product_id);
+    }
+    if (container_id) {
+      query = query.where('container_id', container_id);
     }
     if (name) {
       // Join with product table for name search
