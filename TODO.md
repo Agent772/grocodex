@@ -21,12 +21,12 @@
   - [x] Expiration tracking
 
 - **Shopping List**
-  - [ ] CRUD for shopping lists
+  - [x] CRUD for shopping lists
   - [ ] CRUD for shopping list items
   - [ ] Match shopping list to inventory
 
 - **Product/Barcode**
-  - [ ] Proxy lookup (Open Food Facts)
+  - [x] Proxy lookup (Open Food Facts)
   - [ ] Add product to inventory by barcode
 
 ## Middleware

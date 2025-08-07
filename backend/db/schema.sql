@@ -107,12 +107,13 @@ CREATE TABLE shopping_list (
 
 CREATE TABLE shopping_list_item (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    shopping_list_id INTEGER REFERENCES shopping_list(id) ON DELETE CASCADE,
+    shopping_list_id INTEGER NOT NULL REFERENCES shopping_list(id) ON DELETE CASCADE,
     product_id INTEGER REFERENCES product(id),
     quantity REAL,
     unit TEXT,
     comment TEXT,
     image_url TEXT,
+    completed INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by_user_id INTEGER REFERENCES user(id),
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

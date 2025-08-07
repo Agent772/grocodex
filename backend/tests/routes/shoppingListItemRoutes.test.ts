@@ -1,0 +1,119 @@
+import request from 'supertest';
+import app from '../../src/index';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
+const token = jwt.sign({ userId: 1 }, JWT_SECRET);
+
+let shoppingListId: number;
+let itemId: number;
+
+beforeAll(async () => {
+  // Ensure products exist for product_id 1, 2, 3
+  await request(app)
+    .post('/api/products')
+    .set('Authorization', `Bearer ${token}`)
+    .send({ name: 'Product 1', brand: 'Brand', barcode: '111', image_url: '' });
+  await request(app)
+    .post('/api/products')
+    .set('Authorization', `Bearer ${token}`)
+    .send({ name: 'Product 2', brand: 'Brand', barcode: '222', image_url: '' });
+  await request(app)
+    .post('/api/products')
+    .set('Authorization', `Bearer ${token}`)
+    .send({ name: 'Product 3', brand: 'Brand', barcode: '333', image_url: '' });
+  // Create a shopping list for item tests
+  const res = await request(app)
+    .post('/api/shopping-lists')
+    .set('Authorization', `Bearer ${token}`)
+    .send({ name: 'Test List' });
+  shoppingListId = res.body.id;
+});
+
+describe('Shopping List Item Routes', () => {
+  it('should create a shopping list item', async () => {
+    const res = await request(app)
+      .post('/api/shopping-list-items')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ shopping_list_id: shoppingListId, product_id: 1, quantity: 2, unit: 'pcs', comment: 'Test', image_url: '' });
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('id');
+    itemId = res.body.id;
+  });
+
+  it('should get details for a single shopping list item', async () => {
+    jest.setTimeout(20000);
+    const res = await request(app)
+      .get(`/api/shopping-list-items/${itemId}/details`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('product');
+    expect(res.body).toHaveProperty('store');
+  });
+
+  it('should get details for all shopping list items', async () => {
+    jest.setTimeout(20000);
+    const res = await request(app)
+      .get('/api/shopping-list-items/details/all')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    if (res.body.length > 0) {
+      expect(res.body[0]).toHaveProperty('product');
+      expect(res.body[0]).toHaveProperty('store');
+    }
+  });
+
+  it('should list all shopping list items for user', async () => {
+    const res = await request(app)
+      .get('/api/shopping-list-items')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it('should search shopping list items by comment', async () => {
+    const res = await request(app)
+      .get('/api/shopping-list-items?q=Test')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.some((item: any) => item.comment === 'Test')).toBe(true);
+  });
+
+  it('should get a shopping list item by id', async () => {
+    const res = await request(app)
+      .get(`/api/shopping-list-items/${itemId}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('id', itemId);
+  });
+
+  it('should update a shopping list item', async () => {
+    const res = await request(app)
+      .put(`/api/shopping-list-items/${itemId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ comment: 'Updated' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('comment', 'Updated');
+  });
+
+  it('should batch add shopping list items', async () => {
+    const items = [
+      { shopping_list_id: shoppingListId, product_id: 2, quantity: 1, unit: 'kg', comment: '', image_url: '' },
+      { shopping_list_id: shoppingListId, product_id: 3, quantity: 3, unit: 'pcs', comment: '', image_url: '' }
+    ];
+    const res = await request(app)
+      .post('/api/shopping-list-items/batch')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items });
+    expect(res.statusCode).toBe(201);
+    expect(res.body.success).toBe(true);
+  });
+
+  it('should delete a shopping list item', async () => {
+    const res = await request(app)
+      .delete(`/api/shopping-list-items/${itemId}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(204);
+  });
+});

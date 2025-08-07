@@ -10,6 +10,8 @@ import containerRoutes from './routes/containerRoutes';
 import storeRoutes from './routes/storeRoutes';
 import storeLocationRoutes from './routes/storeLocationRoutes';
 import openFoodFactsRoutes from './routes/openFoodFactsRoutes';
+import shoppingListRoutes from './routes/shoppingListRoutes';
+import shoppingListItemRoutes from './routes/shoppingListItemRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,6 +32,8 @@ app.use('/api/stores', storeRoutes);
 app.use('/api/store-locations', storeLocationRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/openfoodfacts', openFoodFactsRoutes);
+app.use('/api/shopping-lists', shoppingListRoutes);
+app.use('/api/shopping-list-items', shoppingListItemRoutes);
 
 
 // Health check
