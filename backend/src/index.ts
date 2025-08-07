@@ -4,6 +4,8 @@ import userRoutes from './routes/userRoutes';
 import productRoutes from './routes/productRoutes';
 import groceryItemRoutes from './routes/groceryItemRoutes';
 import containerRoutes from './routes/containerRoutes';
+import storeRoutes from './routes/storeRoutes';
+import storeLocationRoutes from './routes/storeLocationRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,14 +18,11 @@ app.use(express.json());
 
 // User-related routes
 app.use('/api', userRoutes);
-// Product-related routes
 app.use('/api/products', productRoutes);
-// Grocery item-related routes
 app.use('/api/grocery-items', groceryItemRoutes);
-
-
-// Container-related routes
 app.use('/api/containers', containerRoutes);
+app.use('/api/stores', storeRoutes);
+app.use('/api/store-locations', storeLocationRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

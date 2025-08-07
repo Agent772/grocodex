@@ -14,9 +14,9 @@
 
 - **Inventory**
   - [x] CRUD for grocery items
-  - [ ] CRUD for containers (nested)
-  - [ ] CRUD for Stores and StoreLocations + Search
-  - [ ] CRUS for Categories + Search
+  - [x] CRUD for containers (nested)
+  - [X] CRUD for Stores and StoreLocations + Search
+  - [ ] CRUD for Categories + Search
   - [ ] Attach items to containers
   - [ ] Expiration tracking
 
