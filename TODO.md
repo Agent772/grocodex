@@ -16,7 +16,7 @@
   - [x] CRUD for grocery items
   - [x] CRUD for containers (nested)
   - [X] CRUD for Stores and StoreLocations + Search
-  - [ ] CRUD for Categories + Search
+  - [x] CRUD for Categories + Search
   - [ ] Attach items to containers
   - [ ] Expiration tracking
 

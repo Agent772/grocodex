@@ -1,3 +1,4 @@
+import categoryRoutes from './routes/categoryRoutes';
 import 'dotenv/config';
 import express from 'express';
 import userRoutes from './routes/userRoutes';
@@ -14,15 +15,14 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 
-// User-related routes
-
-// User-related routes
 app.use('/api', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/grocery-items', groceryItemRoutes);
 app.use('/api/containers', containerRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/store-locations', storeLocationRoutes);
+app.use('/api/categories', categoryRoutes);
+
 
 // Health check
 app.get('/api/health', (_req, res) => {

@@ -6,9 +6,7 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setupTestDb.js'],
   maxWorkers: 1,
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
   },
 };
