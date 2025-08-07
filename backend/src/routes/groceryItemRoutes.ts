@@ -34,7 +34,7 @@ router.post('/', requireAuth, async (req, res) => {
 
 // Read all grocery items with optional filtering by product_id or product name, and pagination
 router.get('/', requireAuth, async (req, res) => {
-  const { product_id, name, container_id, limit, offset } = req.query;
+  const { product_id, name, container_id, limit, offset, expired, expiringSoon } = req.query;
   try {
     let query = require('../db').default('grocery_item');
     if (product_id) {
@@ -42,6 +42,19 @@ router.get('/', requireAuth, async (req, res) => {
     }
     if (container_id) {
       query = query.where('container_id', container_id);
+    }
+    if (expired === 'true') {
+      query = query.where('expiration_date', '<', new Date().toISOString().slice(0, 10));
+    }
+    if (expiringSoon) {
+      const days = parseInt(expiringSoon as string, 10);
+      if (!isNaN(days)) {
+        const today = new Date();
+        const soon = new Date();
+        soon.setDate(today.getDate() + days);
+        query = query.where('expiration_date', '>=', today.toISOString().slice(0, 10))
+                     .andWhere('expiration_date', '<=', soon.toISOString().slice(0, 10));
+      }
     }
     if (name) {
       // Join with product table for name search

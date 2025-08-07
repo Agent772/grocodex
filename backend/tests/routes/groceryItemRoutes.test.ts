@@ -22,6 +22,43 @@ async function getAuthToken() {
 }
 
 describe('Grocery Item Routes', () => {
+  it('should list only expired grocery items', async () => {
+    // Create a product and an expired grocery item
+    const prodRes = await request(app)
+      .post('/api/products')
+      .set('Authorization', token)
+      .send({ name: 'Old Cheese', created_by_user_id: global.testUserId, updated_by_user_id: global.testUserId });
+    const productId = prodRes.body.id;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    await request(app)
+      .post('/api/grocery-items')
+      .set('Authorization', token)
+      .send({ name: 'Expired Cheese', product_id: productId, container_id: containerId, expiration_date: yesterday });
+    const res = await request(app)
+      .get('/api/grocery-items?expired=true')
+      .set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(res.body.some((item: any) => item.name === 'Expired Cheese')).toBe(true);
+  });
+
+  it('should list only expiring soon grocery items', async () => {
+    // Create a product and a soon-to-expire grocery item
+    const prodRes = await request(app)
+      .post('/api/products')
+      .set('Authorization', token)
+      .send({ name: 'Yogurt Soon', created_by_user_id: global.testUserId, updated_by_user_id: global.testUserId });
+    const productId = prodRes.body.id;
+    const inTwoDays = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+    await request(app)
+      .post('/api/grocery-items')
+      .set('Authorization', token)
+      .send({ name: 'Soon Yogurt', product_id: productId, container_id: containerId, expiration_date: inTwoDays });
+    const res = await request(app)
+      .get('/api/grocery-items?expiringSoon=3')
+      .set('Authorization', token);
+    expect(res.status).toBe(200);
+    expect(res.body.some((item: any) => item.name === 'Soon Yogurt')).toBe(true);
+  });
   it('should create a grocery item attached to a container', async () => {
     // Create a product
     const prodRes = await request(app)

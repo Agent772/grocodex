@@ -18,7 +18,7 @@
   - [X] CRUD for Stores and StoreLocations + Search
   - [x] CRUD for Categories + Search
   - [x] Attach items to containers
-  - [ ] Expiration tracking
+  - [x] Expiration tracking
 
 - **Shopping List**
   - [ ] CRUD for shopping lists
