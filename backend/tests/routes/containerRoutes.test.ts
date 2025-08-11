@@ -1,39 +1,19 @@
+
 import request from 'supertest';
 import app from '../../src/index';
 import db from '../../src/db';
-import { signJwt } from '../../src/middleware/auth';
+import fs from 'fs';
+import path from 'path';
 
-// Helper to create a test user and get a real JWT
-afterAll(async () => {
-  await db.destroy();
+let token: string;
+beforeAll(() => {
+  // Read the global test token from file
+  const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+  const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+  token = `Bearer ${tokenData.token}`;
 });
 
-async function getAuthToken() {
-  let user = await db('user').where({ username: 'testuser' }).first();
-  if (!user) {
-    const [id] = await db('user').insert({ username: 'testuser', password_hash: 'testhash' });
-    user = await db('user').where({ id }).first();
-  }
-  const token = signJwt(user.id);
-  return `Bearer ${token}`;
-}
-
 describe('Container Routes', () => {
-  let token: string;
-  beforeEach(async () => {
-    await db('container').truncate();
-    await db('user').truncate();
-    // Create user and get fresh token after truncation
-    let user = await db('user').where({ username: 'testuser' }).first();
-    if (!user) {
-      // Use a valid bcrypt hash for 'testpassword' (hash: $2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw)
-      const validHash = '$2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw';
-      const [id] = await db('user').insert({ username: 'testuser', password_hash: validHash });
-      user = await db('user').where({ id }).first();
-    }
-    token = signJwt(user.id);
-    token = `Bearer ${token}`;
-  });
 
   it('should create a container', async () => {
     const res = await request(app)

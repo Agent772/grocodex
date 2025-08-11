@@ -1,25 +1,23 @@
 import request from 'supertest';
 import app from '../../src/index';
 import db from '../../src/db';
+import fs from 'fs';
+import path from 'path';
 
 describe('User Routes', () => {
   let token: string;
-  let userId: number;
-  beforeEach(async () => {
-    await db('user').truncate();
-    // Register and login a user for authenticated routes
-    const res = await request(app)
-      .post('/api/register')
-      .send({ username: 'edituser', password: 'testpass' });
-    userId = res.body.id;
-    const loginRes = await request(app)
-      .post('/api/login')
-      .send({ username: 'edituser', password: 'testpass' });
-    token = `Bearer ${loginRes.body.token}`;
-  });
-  // ...existing code...
-  afterAll(async () => {
-    await db.destroy();
+  beforeAll(async () => {
+    // Read the global test token from file
+    const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+    const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    token = `Bearer ${tokenData.token}`;
+    // Ensure the global test user exists in the DB with the correct username
+    const exists = await db('user').where({ username: 'testuser' }).first();
+    if (!exists) {
+      // Use the same password hash as setupTestDb.js (bcrypt hash for 'testpass')
+      const hash = '$2a$10$wH8QwQnQwQnQwQnQwQnQwOQwQnQwQnQwQnQwQnQwQnQwQnQwQnQ';
+      await db('user').insert({ username: 'testuser', password_hash: hash });
+    }
   });
 
   it('should register a new user', async () => {
@@ -64,9 +62,22 @@ describe('User Routes', () => {
   });
 
   it('should edit profile (change username)', async () => {
+    // Create a dedicated user for this test
+    const username = 'edituser';
+    const password = 'testpass';
+    await request(app)
+      .post('/api/register')
+      .send({ username, password });
+    // Login to get token
+    let loginRes = await request(app)
+      .post('/api/login')
+      .send({ username, password });
+    expect(loginRes.status).toBe(200);
+    const userToken = `Bearer ${loginRes.body.token}`;
+    // Change username
     const res = await request(app)
       .put('/api/profile')
-      .set('Authorization', token)
+      .set('Authorization', userToken)
       .send({ username: 'editeduser' });
     expect(res.status).toBe(200);
     expect(res.body.username).toBe('editeduser');
@@ -74,31 +85,43 @@ describe('User Routes', () => {
     await db('user').insert({ username: 'taken', password_hash: 'hash' });
     const dupeRes = await request(app)
       .put('/api/profile')
-      .set('Authorization', token)
+      .set('Authorization', userToken)
       .send({ username: 'taken' });
     expect(dupeRes.status).toBe(409);
     expect(dupeRes.body.error).toBe('ERR_USERNAME_EXISTS');
   });
 
   it('should change password', async () => {
+    // Create a dedicated user for this test
+    const username = 'changepassuser';
+    const password = 'testpass';
+    await request(app)
+      .post('/api/register')
+      .send({ username, password });
+    // Login to get token
+    let loginRes = await request(app)
+      .post('/api/login')
+      .send({ username, password });
+    expect(loginRes.status).toBe(200);
+    const userToken = `Bearer ${loginRes.body.token}`;
     // Wrong old password
     let res = await request(app)
       .put('/api/change-password')
-      .set('Authorization', token)
+      .set('Authorization', userToken)
       .send({ oldPassword: 'wrong', newPassword: 'newpass' });
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('ERR_INVALID_CREDENTIALS');
     // Correct old password
     res = await request(app)
       .put('/api/change-password')
-      .set('Authorization', token)
-      .send({ oldPassword: 'testpass', newPassword: 'newpass' });
+      .set('Authorization', userToken)
+      .send({ oldPassword: password, newPassword: 'newpass' });
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     // Login with new password
-    const loginRes = await request(app)
+    loginRes = await request(app)
       .post('/api/login')
-      .send({ username: 'edituser', password: 'newpass' });
+      .send({ username, password: 'newpass' });
     expect(loginRes.status).toBe(200);
     expect(loginRes.body.token).toBeDefined();
   });
@@ -113,19 +136,32 @@ describe('User Routes', () => {
       .set('Authorization', token);
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.some((u: any) => u.username === 'edituser')).toBe(true);
+    expect(res.body.some((u: any) => u.username === 'testuser')).toBe(true);
   });
 
   it('should delete account', async () => {
+    // Create a dedicated user for this test
+    const username = 'deleteuser';
+    const password = 'testpass';
+    await request(app)
+      .post('/api/register')
+      .send({ username, password });
+    // Login to get token
+    let loginRes = await request(app)
+      .post('/api/login')
+      .send({ username, password });
+    expect(loginRes.status).toBe(200);
+    const userToken = `Bearer ${loginRes.body.token}`;
+    // Delete account
     const res = await request(app)
       .delete('/api/account')
-      .set('Authorization', token);
+      .set('Authorization', userToken);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     // Should not be able to login after deletion
-    const loginRes = await request(app)
+    loginRes = await request(app)
       .post('/api/login')
-      .send({ username: 'edituser', password: 'testpass' });
+      .send({ username, password });
     expect(loginRes.status).toBe(401);
   });
 

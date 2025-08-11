@@ -1,9 +1,16 @@
+
 import request from 'supertest';
 import app from '../../src/index';
-import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_me';
-const token = jwt.sign({ userId: 1 }, JWT_SECRET);
+let token: string;
+beforeAll(() => {
+  // Read the global test token from file
+  const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+  const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+  token = `Bearer ${tokenData.token}`;
+});
 
 describe('OpenFoodFacts Routes (Proxy)', () => {
   describe('Barcode Lookup', () => {

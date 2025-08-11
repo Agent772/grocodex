@@ -2,24 +2,21 @@ declare global {
   // eslint-disable-next-line no-var
   var testUserId: number;
 }
+
 import request from 'supertest';
 import app from '../../src/index';
 import db from '../../src/db';
-import { signJwt } from '../../src/middleware/auth';
+import fs from 'fs';
+import path from 'path';
 
-afterAll(async () => {
-  await db.destroy();
+let token: string;
+beforeAll(() => {
+  // Read the global test token from file
+  const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+  const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+  token = `Bearer ${tokenData.token}`;
 });
 
-async function getAuthToken() {
-  let user = await db('user').where({ username: 'grocerytestuser' }).first();
-  if (!user) {
-    const [id] = await db('user').insert({ username: 'grocerytestuser', password_hash: 'testhash' });
-    user = await db('user').where({ id }).first();
-  }
-  const token = signJwt(user.id);
-  return `Bearer ${token}`;
-}
 
 describe('Grocery Item Routes', () => {
   it('should list only expired grocery items', async () => {
@@ -116,28 +113,19 @@ describe('Grocery Item Routes', () => {
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.some((item: any) => item.name === 'Cheese Item')).toBe(true);
   });
-  let token: string;
-  let containerId: number;
-  beforeEach(async () => {
-    await db('grocery_item').truncate();
-    await db('product').truncate();
-    await db('container').truncate();
-    await db('user').truncate();
-        // Create user and get fresh token after truncation
-        let user = await db('user').where({ username: 'grocerytestuser' }).first();
-        if (!user) {
-            // Use a valid bcrypt hash for 'testpassword' (hash: $2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw)
-            const validHash = '$2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw';
-            const [id] = await db('user').insert({ username: 'grocerytestuser', password_hash: validHash });
-            user = await db('user').where({ id }).first();
-        }
-        token = signJwt(user.id);
-        token = `Bearer ${token}`;
-        global.testUserId = user.id;
-        // Create a container for grocery items with required fields
-        const containerRes = await db('container').insert({ name: 'Test Container', created_by_user_id: user.id, updated_by_user_id: user.id });
-        containerId = Array.isArray(containerRes) ? containerRes[0] : containerRes;
-  });
+let token: string;
+let containerId: number;
+let testUserId: number;
+beforeAll(async () => {
+  // Read the global test token from file
+  const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+  const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+  token = `Bearer ${tokenData.token}`;
+  testUserId = tokenData.userId;
+  // Create a container for grocery items with required fields
+  const containerRes = await db('container').insert({ name: 'Test Container', created_by_user_id: testUserId, updated_by_user_id: testUserId });
+  containerId = Array.isArray(containerRes) ? containerRes[0] : containerRes;
+});
 
   it('should create a grocery item', async () => {
         // Create a product first with required fields

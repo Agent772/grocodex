@@ -1,42 +1,17 @@
-import request from 'supertest';
 
+import request from 'supertest';
 import app from '../../src/index';
 import db from '../../src/db';
-import { signJwt } from '../../src/middleware/auth';
-
-// Helper to create a test user and get a real JWT
-async function getAuthToken() {
-  // Create a test user if not exists
-  let user = await db('user').where({ username: 'testuser' }).first();
-  if (!user) {
-    const [id] = await db('user').insert({ username: 'testuser', password_hash: 'testhash' });
-    user = await db('user').where({ id }).first();
-  }
-  const token = signJwt(user.id);
-  return `Bearer ${token}`;
-}
+import fs from 'fs';
+import path from 'path';
 
 describe('Product Routes', () => {
   let token: string;
-  beforeEach(async () => {
-    await db('grocery_item').truncate();
-    await db('product').truncate();
-    await db('user').truncate();
-    // Create user and get fresh token after truncation
-    let user = await db('user').where({ username: 'testuser' }).first();
-    if (!user) {
-      // Use a valid bcrypt hash for 'testpassword' (hash: $2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw)
-      const validHash = '$2a$10$wzQwQwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw';
-      const [id] = await db('user').insert({ username: 'testuser', password_hash: validHash });
-      user = await db('user').where({ id }).first();
-    }
-    token = signJwt(user.id);
-    token = `Bearer ${token}`;
-  });
-
-  afterAll(async () => {
-    // Clean up test DB if needed
-    await db.destroy();
+  beforeAll(() => {
+    // Read the global test token from file
+    const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+    const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    token = `Bearer ${tokenData.token}`;
   });
 
   it('should create a product', async () => {

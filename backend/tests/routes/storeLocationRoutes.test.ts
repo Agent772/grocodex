@@ -1,32 +1,24 @@
+
 import request from 'supertest';
 import app from '../../src/index';
 import db from '../../src/db';
-import { signJwt } from '../../src/middleware/auth';
-
+import fs from 'fs';
+import path from 'path';
 describe('Store Location Routes', () => {
   let token: string;
-  let userId: number;
   let storeId: number;
   let productId: number;
-
   beforeAll(async () => {
-    await db.migrate.latest();
-    // Create user, store, and product
-    const [user] = await db('user').insert({ username: 'storeloctest', password_hash: 'x' }).returning('*');
-    userId = user.id;
-    token = 'Bearer ' + signJwt(userId);
+    // Read the global test token from file
+    const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+    const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    token = `Bearer ${tokenData.token}`;
+    // Create store and product for tests (using global test user)
+    const userId = tokenData.userId;
     const storeInsert = await db('supermarket').insert({ name: 'LocStore', created_by_user_id: userId }).returning('id');
     storeId = Array.isArray(storeInsert) ? (storeInsert[0]?.id ?? storeInsert[0]) : storeInsert;
     const prodInsert = await db('product').insert({ name: 'LocProduct', created_by_user_id: userId }).returning('id');
     productId = Array.isArray(prodInsert) ? (prodInsert[0]?.id ?? prodInsert[0]) : prodInsert;
-  });
-
-  afterAll(async () => {
-    await db('supermarket_product').truncate();
-    await db('supermarket').truncate();
-    await db('product').truncate();
-    await db('user').truncate();
-    await db.destroy();
   });
 
   it('should create a store location', async () => {

@@ -1,24 +1,17 @@
+
 import request from 'supertest';
 import app from '../../src/index';
 import db from '../../src/db';
-import { signJwt } from '../../src/middleware/auth';
+import fs from 'fs';
+import path from 'path';
 
 describe('Store Routes', () => {
   let token: string;
-  let userId: number;
-
-  beforeAll(async () => {
-    await db.migrate.latest();
-    // Create a user and get token
-    const [user] = await db('user').insert({ username: 'storetest', password_hash: 'x' }).returning('*');
-    userId = user.id;
-    token = 'Bearer ' + signJwt(userId);
-  });
-
-  afterAll(async () => {
-    await db('supermarket').truncate();
-    await db('user').truncate();
-    await db.destroy();
+  beforeAll(() => {
+    // Read the global test token from file
+    const tokenPath = path.join('/tmp', 'grocodex_test_token.json');
+    const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+    token = `Bearer ${tokenData.token}`;
   });
 
   it('should create a store', async () => {

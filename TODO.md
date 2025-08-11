@@ -22,7 +22,7 @@
 
 - **Shopping List**
   - [x] CRUD for shopping lists
-  - [ ] CRUD for shopping list items
+  - [x] CRUD for shopping list items
   - [ ] Match shopping list to inventory
 
 - **Product/Barcode**

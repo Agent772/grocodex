@@ -50,14 +50,18 @@ router.get('/details/all', requireAuth, async (req, res) => {
       'sli.quantity',
       'sli.unit',
       'sli.comment',
-      'sli.image_url',
+      'sli.image_url as sli_image_url',
       'sli.created_by_user_id',
       'sli.created_at',
       'sli.updated_at',
       'p.id as product_id',
+      'p.name as product_name',
+      'p.image_url as product_image_url',
       's.id as store_id',
-      db.raw('json_object("pid", p.id, "name", p.name, "brand", p.brand, "barcode", p.barcode, "image_url", p.image_url) as product'),
-      db.raw('json_object("sid", s.id, "name", s.name, "location", s.location) as store')
+      's.name as store_name',
+      's.location as store_location',
+      db.raw('json_object("pid", p.id, "product_name", p.name, "brand", p.brand, "barcode", p.barcode, "product_image_url", p.image_url) as product'),
+      db.raw('json_object("sid", s.id, "store_name", s.name, "store_location", s.location) as store')
     )
     .where('sli.created_by_user_id', req.user.id);
   if (shopping_list_id) query = query.andWhere('sli.shopping_list_id', shopping_list_id as string);
@@ -82,14 +86,18 @@ router.get('/:id/details', requireAuth, async (req, res) => {
       'sli.quantity',
       'sli.unit',
       'sli.comment',
-      'sli.image_url',
+      'sli.image_url as sli_image_url',
       'sli.created_by_user_id',
       'sli.created_at',
       'sli.updated_at',
       'p.id as product_id',
+      'p.name as product_name',
+      'p.image_url as product_image_url',
       's.id as store_id',
-      db.raw('json_object("pid", p.id, "name", p.name, "brand", p.brand, "barcode", p.barcode, "image_url", p.image_url) as product'),
-      db.raw('json_object("sid", s.id, "name", s.name, "location", s.location) as store')
+      's.name as store_name',
+      's.location as store_location',
+      db.raw('json_object("pid", p.id, "product_name", p.name, "brand", p.brand, "barcode", p.barcode, "product_image_url", p.image_url) as product'),
+      db.raw('json_object("sid", s.id, "store_name", s.name, "store_location", s.location) as store')
     )
     .where('sli.id', req.params.id)
     .andWhere('sli.created_by_user_id', req.user.id)
