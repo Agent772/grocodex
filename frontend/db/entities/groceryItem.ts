@@ -1,8 +1,19 @@
 // CRUD utilities for groceryItems in IndexedDB
+
 import { getDB } from '../index';
 import { GroceryItem } from '../../types/entities';
 
-// Get all grocery items, with optional filters and pagination
+/**
+ * Query parameters for retrieving grocery items.
+ * 
+ * @property {string} [product_id] - Filter by product ID.
+ * @property {string} [container_id] - Filter by container ID.
+ * @property {boolean} [expired] - If true, only return expired items.
+ * @property {number} [expiringSoonDays] - Return items expiring within this number of days.
+ * @property {string} [name] - Case-insensitive substring search on item name.
+ * @property {number} [limit] - Maximum number of items to return.
+ * @property {number} [offset] - Number of items to skip (for pagination).
+ */
 export interface GroceryItemQuery {
   product_id?: string;
   container_id?: string;
@@ -13,6 +24,12 @@ export interface GroceryItemQuery {
   offset?: number;
 }
 
+/**
+ * Retrieves all grocery items from IndexedDB, with optional filtering and pagination.
+ * 
+ * @param {GroceryItemQuery} [query] - Optional query parameters for filtering and pagination.
+ * @returns {Promise<GroceryItem[]>} Promise resolving to an array of grocery items.
+ */
 export async function getAllGroceryItems(query: GroceryItemQuery = {}): Promise<GroceryItem[]> {
   const db = await getDB();
   let items = await db.getAll('grocery_items') as GroceryItem[];
@@ -52,7 +69,13 @@ export async function getAllGroceryItems(query: GroceryItemQuery = {}): Promise<
 
   return items;
 }
-// Cascading delete: delete all grocery items for a given product_id
+
+/**
+ * Deletes all grocery items associated with a given product ID (cascading delete).
+ * 
+ * @param {string} product_id - The product ID whose grocery items should be deleted.
+ * @returns {Promise<void>} Promise that resolves when deletion is complete.
+ */
 export async function deleteGroceryItemsByProductId(product_id: string): Promise<void> {
   const db = await getDB();
   const items = await db.getAll('grocery_items') as GroceryItem[];
@@ -60,6 +83,13 @@ export async function deleteGroceryItemsByProductId(product_id: string): Promise
   await Promise.all(toDelete.map(i => db.delete('grocery_items', i.id)));
 }
 
+/**
+ * Retrieves a grocery item by its unique ID.
+ * 
+ * @param {string} id - The ID of the grocery item.
+ * @returns {Promise<GroceryItem | undefined>} Promise resolving to the grocery item, or throws if not found.
+ * @throws { error: 'ERR_GROCERY_ITEM_NOT_FOUND' } If the item does not exist.
+ */
 export async function getGroceryItemById(id: string): Promise<GroceryItem | undefined> {
   const db = await getDB();
   const item = await db.get('grocery_items', id) as GroceryItem | undefined;
@@ -69,6 +99,13 @@ export async function getGroceryItemById(id: string): Promise<GroceryItem | unde
   return item;
 }
 
+/**
+ * Adds a new grocery item or updates an existing one in IndexedDB.
+ * 
+ * @param {GroceryItem} item - The grocery item to add or update.
+ * @returns {Promise<void>} Promise that resolves when the operation is complete.
+ * @throws { error: 'ERR_GROCERY_ITEM_CREATE_FAILED' } If the operation fails.
+ */
 export async function addOrUpdateGroceryItem(item: GroceryItem): Promise<void> {
   const db = await getDB();
   try {
@@ -78,6 +115,14 @@ export async function addOrUpdateGroceryItem(item: GroceryItem): Promise<void> {
   }
 }
 
+/**
+ * Deletes a grocery item by its unique ID.
+ * 
+ * @param {string} id - The ID of the grocery item to delete.
+ * @returns {Promise<void>} Promise that resolves when deletion is complete.
+ * @throws { error: 'ERR_GROCERY_ITEM_NOT_FOUND' } If the item does not exist.
+ * @throws { error: 'ERR_GROCERY_ITEM_DELETE_FAILED' } If the deletion fails.
+ */
 export async function deleteGroceryItem(id: string): Promise<void> {
   const db = await getDB();
   const item = await db.get('grocery_items', id);
@@ -91,6 +136,12 @@ export async function deleteGroceryItem(id: string): Promise<void> {
   }
 }
 
+/**
+ * Retrieves all grocery items that match a given barcode using an IndexedDB index.
+ * 
+ * @param {string} barcode - The barcode to search for.
+ * @returns {Promise<GroceryItem[]>} Promise resolving to an array of matching grocery items.
+ */
 export async function getGroceryItemsByBarcode(barcode: string): Promise<GroceryItem[]> {
   const db = await getDB();
   return db.getAllFromIndex('grocery_items', 'by-barcode', barcode) as Promise<GroceryItem[]>;

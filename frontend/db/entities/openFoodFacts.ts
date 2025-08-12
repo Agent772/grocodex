@@ -1,21 +1,22 @@
 // Open Food Facts integration utilities for Grocodex (local-first)
-// - Search Open Food Facts by product name
-// - Lookup product by barcode
-// - Create Product and GroceryItem from Open Food Facts result
-// - All data is stored locally (IndexedDB)
 
 import { Product, GroceryItem } from '../../types/entities';
 import { OpenFoodFactsProduct } from '../../types/openFoodFacts';
 import { addOrUpdateProduct, getProductsByBarcode } from './product';
 import { addOrUpdateGroceryItem } from './groceryItem';
 
-// Use zxing-js or QuaggaJS for barcode scanning in the UI (not here)
 
-// --- Open Food Facts API helpers ---
 const OFF_API_BASE = 'https://world.openfoodfacts.org';
 
 
-// Search Open Food Facts by product name
+/**
+ * Searches for products in the Open Food Facts database by product name.
+ *
+ * @param name - The name or search term to query for products.
+ * @returns A promise that resolves to an array of `OpenFoodFactsProduct` objects matching the search term.
+ * @throws An object with `{ error: 'ERR_OPENFOODFACTS_UNAVAILABLE' }` if the Open Food Facts API is unavailable.
+ * @throws An object with `{ error: 'ERR_NOT_FOUND' }` if no products are found in the response.
+ */
 export async function searchOpenFoodFacts(name: string): Promise<OpenFoodFactsProduct[]> {
   const url = `${OFF_API_BASE}/cgi/search.pl`;
   const params = new URLSearchParams({
@@ -34,7 +35,14 @@ export async function searchOpenFoodFacts(name: string): Promise<OpenFoodFactsPr
   throw { error: 'ERR_NOT_FOUND' };
 }
 
-// Lookup Open Food Facts by barcode
+/**
+ * Looks up a product from the Open Food Facts API using the provided barcode.
+ *
+ * @param barcode - The barcode of the product to look up.
+ * @returns A promise that resolves to the `OpenFoodFactsProduct` if found.
+ * @throws An error object with `{ error: 'ERR_OPENFOODFACTS_UNAVAILABLE' }` if the API is unavailable.
+ * @throws An error object with `{ error: 'ERR_NOT_FOUND' }` if the product is not found.
+ */
 export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<OpenFoodFactsProduct> {
   const url = `${OFF_API_BASE}/api/v0/product/${barcode}.json`;
   const res = await fetch(url);
@@ -46,7 +54,19 @@ export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<OpenF
   throw { error: 'ERR_NOT_FOUND' };
 }
 
-// Create Product and GroceryItem from Open Food Facts product
+/**
+ * Creates a new product and grocery item from an Open Food Facts product object.
+ * 
+ * This function checks if a product with the given barcode already exists.
+ * If it exists, it uses the existing product; otherwise, it creates a new product entry.
+ * Then, it creates a grocery item associated with the product.
+ * 
+ * @param offProduct - The Open Food Facts product object containing product details.
+ * @param container_id - (Optional) The ID of the container to associate with the grocery item.
+ * @param quantity - (Optional) The quantity of the grocery item. Defaults to 1.
+ * @param expiration_date - (Optional) The expiration date of the grocery item.
+ * @returns A promise that resolves to an object containing the created or found product and the new grocery item.
+ */
 export async function createProductAndGroceryItemFromOFF(
   offProduct: OpenFoodFactsProduct,
   container_id?: string,
