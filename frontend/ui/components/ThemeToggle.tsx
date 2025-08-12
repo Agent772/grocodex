@@ -12,14 +12,21 @@ interface ThemeToggleProps {
   onToggle: () => void;
 }
 
-const SunIcon = (props: any) => {
+const SunIcon = (props: any & { mode?: 'light' | 'dark' }) => {
   const theme = useTheme();
-  return <Brightness7Icon sx={{ color: theme.palette.secondary.main, fontSize: 20, ...props?.sx }} {...props} />;
+  const { mode, ...rest } = props;
+  // Sun is bright (secondary) in light mode, faded (primary) in dark mode
+  const color = mode === 'light' ? theme.palette.secondary.main : theme.palette.primary.main;
+  return <Brightness7Icon sx={{ color, fontSize: 20, ...props?.sx }} {...rest} />;
 };
 
-const MoonIcon = (props: any) => {
+const MoonIcon = (props: any & { mode?: 'light' | 'dark' }) => {
   const theme = useTheme();
-  return <Brightness2Icon sx={{ color: theme.palette.primary.main, fontSize: 20, ...props?.sx }} {...props} />;
+  const { mode, ...rest } = props;
+  // Moon is secondary in dark mode, primary in light mode
+  const color = mode === 'dark' ? theme.palette.secondary.main : theme.palette.secondary.main;
+  // Force fill color for SVG path (sometimes MUI icons use fill instead of color)
+  return <Brightness2Icon sx={{ color, fill: color, fontSize: 20, ...props?.sx }} {...rest} />;
 };
 
 const CustomSwitch = styled(Switch, { shouldForwardProp: (prop) => prop !== 'checked' })(({ theme }) => ({
@@ -44,11 +51,13 @@ const CustomSwitch = styled(Switch, { shouldForwardProp: (prop) => prop !== 'che
     width: 28,
     height: 28,
     position: 'relative',
+    border: `2px solid ${theme.palette.primary.main}`,
   },
   '& .MuiSwitch-track': {
     borderRadius: 20 / 2,
     backgroundColor: theme.palette.secondary.main,
     opacity: 1,
+    border: `2px solid ${theme.palette.primary.main}`,
   },
 }));
 
@@ -56,13 +65,13 @@ export function ThemeToggle({ mode, onToggle }: ThemeToggleProps) {
   const { t } = useTranslation();
   return (
     <Box display="flex" alignItems="center" gap={1}>
-      <SunIcon sx={{ opacity: mode === 'light' ? 1 : 0.5 }} />
+      <SunIcon mode={mode} sx={{ opacity: mode === 'light' ? 1 : 0.5 }} />
       <CustomSwitch
-        checked={mode === 'dark'}
+        defaultChecked
         onChange={onToggle}
         inputProps={{ 'aria-label': t(UI_TRANSLATION_KEYS.THEME_TOGGLE, 'Toggle dark and light mode') }}
       />
-      <MoonIcon sx={{ opacity: mode === 'dark' ? 1 : 0.5 }} />
+      <MoonIcon mode={mode} sx={{ opacity: mode === 'dark' ? 1 : 0.5 }} />
     </Box>
   );
 }
