@@ -1,0 +1,17 @@
+{
+  "name": "Grocodex",
+  "short_name": "Grocodex",
+  "description": "Privacy-first grocery inventory app.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#181a1b",
+  "theme_color": "#388e3c",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
