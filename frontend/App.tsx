@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import Dialog from '@mui/material/Dialog';
 import UserProfile from './ui/components/users/UserProfile';
+import PantryOverview from './ui//pages/PantryOverview';
 import { UserProvider, useUser } from './db/hooks/UserContext';
 import LoginPage from './ui/pages/LoginPage';
 import { ThemeProvider, CssBaseline, useMediaQuery } from '@mui/material';
@@ -54,7 +55,7 @@ function AppContent() {
       content = <Typography variant="h5" align="center">CookieDoo Import (Coming soon)</Typography>;
       break;
     case 2:
-      content = <Typography variant="h5" align="center">Pantry Overview (Coming soon)</Typography>;
+      content = <PantryOverview />;
       break;
     default:
       content = null;
@@ -109,14 +110,6 @@ function AppContent() {
             setAppTheme={setTheme}
           />
         </Dialog>
-          <Logo />
-          {/* ThemeToggle moved to UserProfile */}
-          <Typography variant="h3" mt={2} mb={2} align="center">
-            Grocodex
-          </Typography>
-          <Typography variant="h6" align="center" color="text.secondary" mb={2}>
-            {t('welcome.subtitle', 'Welcome to your privacy-first grocery inventory app.')}
-          </Typography>
           {content}
         </Box>
         {isMobile && <BottomNav value={nav} onChange={(_, v) => setNav(v)} />}

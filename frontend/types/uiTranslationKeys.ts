@@ -3,6 +3,21 @@
 
 export const UI_TRANSLATION_KEYS = {
   /**
+   * Pantry page title
+   * Used in: PantryOverview.tsx
+   */
+  PANTRY_TITLE: 'pantry.title',
+  /**
+   * Pantry empty state message
+   * Used in: PantryOverview.tsx
+   */
+  PANTRY_EMPTY: 'pantry.empty',
+  /**
+   * Pantry add item button
+   * Used in: PantryOverview.tsx
+   */
+  PANTRY_ADD: 'pantry.add',
+  /**
    * Aria-label for the theme toggle switch (dark/light mode)
    * Used in: ThemeToggle.tsx
    */
