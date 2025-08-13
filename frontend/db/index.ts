@@ -1,6 +1,7 @@
 // IndexedDB setup for Grocodex (modular, production-ready)
 // Uses idb (https://www.npmjs.com/package/idb) for a safe, promise-based API
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { ensureDefaultAdminUser } from './entities/user';
 import {
   User,
   Container,
@@ -83,6 +84,8 @@ export function getDB() {
         }
       },
     });
+    // Ensure default admin user exists after DB setup
+    dbPromise.then(() => ensureDefaultAdminUser());
   }
   return dbPromise;
 }

@@ -4,8 +4,11 @@ export interface User {
   id: string;
   username: string;
   password_hash: string;
-  created_at?: string;
+  created_at: string;
   updated_at?: string;
+  avatar?: string; // base64 string or blob URL
+  isAdmin?: boolean; // true if user is an admin
+  theme?: 'light' | 'dark'; // user's theme preference
 }
 
 export interface Container {

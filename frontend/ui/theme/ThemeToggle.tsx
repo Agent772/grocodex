@@ -67,7 +67,7 @@ export function ThemeToggle({ mode, onToggle }: ThemeToggleProps) {
     <Box display="flex" alignItems="center" gap={1}>
       <SunIcon mode={mode} sx={{ opacity: mode === 'light' ? 1 : 0.5 }} />
       <CustomSwitch
-        defaultChecked
+        defaultChecked={mode === 'dark'}
         onChange={onToggle}
         inputProps={{ 'aria-label': t(UI_TRANSLATION_KEYS.THEME_TOGGLE, 'Toggle dark and light mode') }}
       />
