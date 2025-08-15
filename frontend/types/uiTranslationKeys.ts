@@ -3,19 +3,25 @@
 
 export const UI_TRANSLATION_KEYS = {
   /**
+   * Container dialog: Edit title
+   * Used in: ContainerNewEdit.tsx
+   */
+  CONTAINER_EDIT_TITLE: 'container.editTitle',
+  CONTAINER_ADD_SUB_TITLE: 'container.addSubTitle',
+  CONTAINER_ADD_TITLE: 'container.addTitle',
+  CONTAINER_PARENT: 'container.parent',
+  CONTAINER_NAME: 'container.name',
+
+  CONTAINER_DELETE_IMAGE: 'container.deleteImage',
+  CONTAINER_SAVE: 'container.save',
+  CONTAINER_ADD: 'container.add',
+  COMMON_CANCEL: 'common.cancel',
+  /**
    * Pantry page title
    * Used in: PantryOverview.tsx
    */
   PANTRY_TITLE: 'pantry.title',
-  /**
-   * Pantry empty state message
-   * Used in: PantryOverview.tsx
-   */
   PANTRY_EMPTY: 'pantry.empty',
-  /**
-   * Pantry add item button
-   * Used in: PantryOverview.tsx
-   */
   PANTRY_ADD: 'pantry.add',
   /**
    * Aria-label for the theme toggle switch (dark/light mode)
@@ -34,6 +40,8 @@ export const UI_TRANSLATION_KEYS = {
    * Bottom navigation: Pantry Overview tab
    */
   NAV_PANTRY_OVERVIEW: 'nav.pantryOverview',
+  UPLOAD_IMAGE: 'container.uploadImage',
+  TAKE_PHOTO: 'container.takePhoto',
   /**
    * Login page labels
    */
@@ -81,5 +89,21 @@ export const UI_TRANSLATION_KEYS = {
   ADMIN_USERS_RESET_PASSWORD: 'admin.users.resetPassword',
   ADMIN_USERS_DELETE_CONFIRM: 'admin.users.deleteConfirm',
   ADMIN_USERS_DELETE_CONFIRM_TEXT: 'admin.users.deleteConfirmText',
+
+  /**
+   * Grocery item dialog labels
+   */
+  GROCERY_BARCODE: 'grocery.barcode',
+  GROCERY_ADD_TITLE: 'grocery.addTitle',
+  GROCERY_NAME: 'grocery.name',
+  GROCERY_SEARCH_RESULTS: 'grocery.searchResults',
+  GROCERY_PRODUCT_INFO: 'grocery.productInfo',
+  GROCERY_BRAND: 'grocery.brand',
+  GROCERY_QUANTITY: 'grocery.quantity',
+  GROCERY_UNIT: 'grocery.unit',
+  GROCERY_NOTES: 'grocery.notes',
+  GROCERY_ADD: 'grocery.add',
+  GROCERY_BUY_DATE: 'grocery.buyDate',
+  GROCERY_EXPIRATION_DATE: 'grocery.expirationDate',
 } as const;
 

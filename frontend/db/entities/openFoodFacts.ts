@@ -4,9 +4,11 @@ import { Product, GroceryItem } from '../../types/entities';
 import { OpenFoodFactsProduct } from '../../types/openFoodFacts';
 import { addOrUpdateProduct, getProductsByBarcode } from './product';
 import { addOrUpdateGroceryItem } from './groceryItem';
+import i18n from '../../i18n';
 
 
-const OFF_API_BASE = 'https://world.openfoodfacts.org';
+const OFF_API_BASE = 'https://world.openfoodfacts.net';
+const OFF_USER_AGENT = 'Grocodex/0.4 (akex.urban@gmail.com)';
 
 
 /**
@@ -26,7 +28,11 @@ export async function searchOpenFoodFacts(name: string): Promise<OpenFoodFactsPr
     json: '1',
     page_size: '10',
   });
-  const res = await fetch(`${url}?${params}`);
+  const res = await fetch(`${url}?${params}`, {
+    headers: {
+      'User-Agent': OFF_USER_AGENT,
+    },
+  });
   if (!res.ok) throw { error: 'ERR_OPENFOODFACTS_UNAVAILABLE' };
   const data = await res.json();
   if (data.products && Array.isArray(data.products)) {
@@ -44,11 +50,34 @@ export async function searchOpenFoodFacts(name: string): Promise<OpenFoodFactsPr
  * @throws An error object with `{ error: 'ERR_NOT_FOUND' }` if the product is not found.
  */
 export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<OpenFoodFactsProduct> {
-  const url = `${OFF_API_BASE}/api/v0/product/${barcode}.json`;
-  const res = await fetch(url);
+  // Detect language code from i18n
+  const lang = i18n.language || 'de';
+  // Detect country code (try from browser, fallback to 'at')
+  let country = 'at';
+  if (typeof navigator !== 'undefined' && navigator.language) {
+    const parts = navigator.language.split('-');
+    if (parts.length > 1) country = parts[1].toLowerCase();
+    else country = parts[0].toLowerCase();
+  }
+  // Dynamic product_name field
+  const productNameField = `product_name_${lang}`;
+  const fields = [
+    'id',
+    productNameField,
+    'product_name',
+    'brands',
+    'product_quantity',
+    'product_quantity_unit',
+  ].join(',');
+  const url = `${OFF_API_BASE}/api/v3/product/${barcode}.json?cc=${country}&lc=${lang}&fields=${fields}`;
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': OFF_USER_AGENT,
+    },
+  });
   if (!res.ok) throw { error: 'ERR_OPENFOODFACTS_UNAVAILABLE' };
   const data = await res.json();
-  if (data.status === 1 && data.product) {
+  if (data.product && typeof data.product === 'object') {
     return data.product;
   }
   throw { error: 'ERR_NOT_FOUND' };

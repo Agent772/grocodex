@@ -89,6 +89,30 @@ export async function getProductsByName(name: string): Promise<Product[]> {
 }
 
 /**
+ * Retrieves all products from the database that match the specified unit.
+ */
+export async function getProductsByUnit(unit: string): Promise<Product[]> {
+  const db = await getDB();
+  return db.getAllFromIndex('products', 'by-unit', unit);
+}
+
+/**
+ * Retrieves all products from the database that match the specified quantity.
+ */
+export async function getProductsByQuantity(quantity: number): Promise<Product[]> {
+  const db = await getDB();
+  return db.getAllFromIndex('products', 'by-quantity', quantity.toString());
+}
+
+/**
+ * Retrieves all products from the database that match the specified photo_url.
+ */
+export async function getProductsByPhotoUrl(photo_url: string): Promise<Product[]> {
+  const db = await getDB();
+  return db.getAllFromIndex('products', 'by-photo_url', photo_url);
+}
+
+/**
  * Deletes a product and all associated grocery items in a cascading manner.
  *
  * This function first deletes all grocery items linked to the specified product ID,

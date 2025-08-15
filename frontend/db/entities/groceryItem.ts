@@ -10,7 +10,6 @@ import { GroceryItem } from '../../types/entities';
  * @property {string} [container_id] - Filter by container ID.
  * @property {boolean} [expired] - If true, only return expired items.
  * @property {number} [expiringSoonDays] - Return items expiring within this number of days.
- * @property {string} [name] - Case-insensitive substring search on item name.
  * @property {number} [limit] - Maximum number of items to return.
  * @property {number} [offset] - Number of items to skip (for pagination).
  */
@@ -54,10 +53,7 @@ export async function getAllGroceryItems(query: GroceryItemQuery = {}): Promise<
       return i.expiration_date >= today.toISOString().slice(0, 10) && i.expiration_date <= soon.toISOString().slice(0, 10);
     });
   }
-  if (query.name) {
-    // Name search (case-insensitive)
-    items = items.filter(i => i.name && i.name.toLowerCase().includes(query.name!.toLowerCase()));
-  }
+  // If you want to filter by product name, do it in the UI by joining with products
 
   // Pagination
   if (typeof query.offset === 'number') {
@@ -134,15 +130,4 @@ export async function deleteGroceryItem(id: string): Promise<void> {
   } catch (e) {
     throw { error: 'ERR_GROCERY_ITEM_DELETE_FAILED' };
   }
-}
-
-/**
- * Retrieves all grocery items that match a given barcode using an IndexedDB index.
- * 
- * @param {string} barcode - The barcode to search for.
- * @returns {Promise<GroceryItem[]>} Promise resolving to an array of matching grocery items.
- */
-export async function getGroceryItemsByBarcode(barcode: string): Promise<GroceryItem[]> {
-  const db = await getDB();
-  return db.getAllFromIndex('grocery_items', 'by-barcode', barcode) as Promise<GroceryItem[]>;
 }

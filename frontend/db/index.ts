@@ -32,8 +32,13 @@ interface GrocodexDB extends DBSchema {
     value: ProductCategory;
     indexes: { 'by-name': string };
   };
-  products: { key: string; value: Product; indexes: { 'by-barcode': string; 'by-name': string } };
-  grocery_items: { key: string; value: GroceryItem; indexes: { 'by-product_id': string; 'by-container_id': string; 'by-name': string; 'by-barcode': string } };
+  product_groups: {
+    key: string;
+    value: import('../types/entities').ProductGroup;
+    indexes: { 'by-name': string };
+  };
+  products: { key: string; value: Product; indexes: { 'by-barcode': string; 'by-name': string; 'by-product_group_id': string; 'by-unit': string; 'by-quantity': string; 'by-photo_url': string } };
+  grocery_items: { key: string; value: GroceryItem; indexes: { 'by-product_id': string; 'by-container_id': string; } };
   shopping_lists: { key: string; value: ShoppingList };
   shopping_list_items: { key: string; value: ShoppingListItem; indexes: { 'by-shopping_list_id': string; 'by-product_id': string } };
 }
@@ -63,16 +68,23 @@ export function getDB() {
           const store = db.createObjectStore('product_categories', { keyPath: 'id' });
           store.createIndex('by-name', 'name', { unique: false });
         }
+        if (!db.objectStoreNames.contains('product_groups')) {
+          const store = db.createObjectStore('product_groups', { keyPath: 'id' });
+          store.createIndex('by-name', 'name', { unique: false });
+        }
         if (!db.objectStoreNames.contains('products')) {
           const store = db.createObjectStore('products', { keyPath: 'id' });
           store.createIndex('by-barcode', 'barcode', { unique: false });
           store.createIndex('by-name', 'name', { unique: false });
+          store.createIndex('by-product_group_id', 'product_group_id', { unique: false });
+          store.createIndex('by-unit', 'unit', { unique: false });
+          store.createIndex('by-quantity', 'quantity', { unique: false });
+          store.createIndex('by-photo_url', 'photo_url', { unique: false });
         }
         if (!db.objectStoreNames.contains('grocery_items')) {
           const store = db.createObjectStore('grocery_items', { keyPath: 'id' });
           store.createIndex('by-product_id', 'product_id', { unique: false });
           store.createIndex('by-container_id', 'container_id', { unique: false });
-          store.createIndex('by-name', 'name', { unique: false });
         }
         if (!db.objectStoreNames.contains('shopping_lists')) {
           db.createObjectStore('shopping_lists', { keyPath: 'id' });

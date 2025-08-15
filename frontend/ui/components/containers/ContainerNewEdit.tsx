@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useTheme, useMediaQuery } from '@mui/material';
 import { compressImage, blobToBase64 } from '../../../utils/imageCompressionHelper';
 import { addOrUpdateContainer } from '../../../db/entities/container';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Autocomplete, IconButton, Tooltip } from '@mui/material';
@@ -6,6 +7,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
+import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
 
 interface ContainerOption {
   id: string;
@@ -91,9 +93,6 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
     if (onSaved) onSaved();
   };
 
-  // Helper to show parent breadcrumb
-  const parentBreadcrumb = parent ? getBreadcrumbLabel(parent) : '';
-
   // Delete image handler
   const handleDeleteImage = () => {
     setImagePreview(undefined);
@@ -102,17 +101,36 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth={isMobile ? undefined : 'sm'}
+      fullWidth
+      sx={
+        !isMobile
+          ? { '& .MuiDialog-paper': { width: '480px', maxWidth: '96vw' } }
+          : { '& .MuiDialog-paper': { width: '900vw', maxWidth: '90vw', margin: 0, borderRadius: 0 } }
+      }
+    >
       <DialogTitle>
         {container
-          ? t('container.editTitle', 'Edit Container')
+          ? t(UI_TRANSLATION_KEYS.CONTAINER_EDIT_TITLE, 'Edit Container')
           : parentContainer
-          ? t('container.addSubTitle', 'Add Sub-Container')
-          : t('container.addTitle', 'Add New Container')}
+          ? t(UI_TRANSLATION_KEYS.CONTAINER_ADD_SUB_TITLE, 'Add Sub-Container')
+          : t(UI_TRANSLATION_KEYS.CONTAINER_ADD_TITLE, 'Add New Container')}
       </DialogTitle>
       <DialogContent>
-        <Box display="flex" alignItems="center" gap={1} mt={1}>
+        <Box
+          display="flex"
+          alignItems={isMobile ? undefined : 'center'}
+          gap={1}
+          mt={1}
+          flexDirection={isMobile ? 'column' : 'row'}
+        >
           <Autocomplete
             options={containerOptions}
             getOptionLabel={getBreadcrumbLabel}
@@ -121,38 +139,40 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
             renderInput={params => (
               <TextField
                 {...params}
-                label={t('container.parent', 'Parent Container')}
+                label={t(UI_TRANSLATION_KEYS.CONTAINER_PARENT, 'Parent Container')}
                 variant="standard"
                 sx={{ minWidth: 120 }}
               />
             )}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            fullWidth={false}
+            fullWidth={isMobile}
             disableClearable={false}
             filterOptions={(options, state) =>
               options.filter(opt => getBreadcrumbLabel(opt).toLowerCase().includes(state.inputValue.toLowerCase()))
             }
-            sx={{ minWidth: 180 }}
+            sx={{ minWidth: isMobile ? undefined : 180, width: isMobile ? '100%' : undefined }}
           />
-          <Box fontWeight={500} color="text.secondary">{'>'}</Box>
+          {!isMobile && (
+            <Box fontWeight={500} color="text.secondary">{'>'}</Box>
+          )}
           <TextField
             autoFocus
-            label={t('container.name', 'Container Name')}
+            label={t(UI_TRANSLATION_KEYS.CONTAINER_NAME, 'Container Name')}
             value={name}
             onChange={e => setName(e.target.value)}
             variant="standard"
             required
-            sx={{ flex: 1, minWidth: 120 }}
+            sx={{ flex: 1, minWidth: 120, width: isMobile ? '100%' : undefined }}
           />
         </Box>
         {!imagePreview && (
-          <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
-            <Tooltip title={t('container.uploadImage', 'Upload Image')}>
+          <Box display="flex" justifyContent={isMobile ? 'center' : 'flex-end'} gap={2} mt={2}>
+            <Tooltip title={t(UI_TRANSLATION_KEYS.UPLOAD_IMAGE, 'Upload Image')}>
               <IconButton color="secondary" component="span" onClick={() => fileInputRef.current?.click()}>
                 <FileUploadIcon/>
               </IconButton>
             </Tooltip>
-            <Tooltip title={t('container.takePhoto', 'Take Photo')}>
+            <Tooltip title={t(UI_TRANSLATION_KEYS.TAKE_PHOTO, 'Take Photo')}>
               <IconButton color="secondary" component="span" onClick={() => cameraInputRef.current?.click()}>
                 <PhotoCameraIcon/>
               </IconButton>
@@ -168,7 +188,7 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
                 color="error"
                 onClick={handleDeleteImage}
                 sx={{ position: 'absolute', top: 4, right: 4, background: 'rgba(255,255,255,0.7)' }}
-                aria-label={t('container.deleteImage', 'Delete Image')}
+                aria-label={t(UI_TRANSLATION_KEYS.CONTAINER_DELETE_IMAGE, 'Delete Image')}
               >
                 <DeleteIcon/>
               </IconButton>
@@ -192,9 +212,9 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color='inherit'>{t('common.cancel', 'Cancel')}</Button>
+        <Button onClick={onClose} color='inherit'>{t(UI_TRANSLATION_KEYS.COMMON_CANCEL, 'Cancel')}</Button>
         <Button onClick={handleSubmit} variant="contained" color="primary" disabled={!name.trim()}>
-          {container ? t('container.save', 'Save') : t('container.add', 'Add')}
+          {container ? t(UI_TRANSLATION_KEYS.CONTAINER_SAVE, 'Save') : t(UI_TRANSLATION_KEYS.CONTAINER_ADD, 'Add')}
         </Button>
       </DialogActions>
     </Dialog>

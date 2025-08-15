@@ -55,16 +55,27 @@ export interface ProductCategory {
   updated_by_user_id?: string;
 }
 
+export interface ProductGroup {
+  id: string;
+  name: string; 
+  brand?: string;
+  description?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   brand?: string;
+  product_group_id?: string; 
   open_food_facts_id?: string;
   barcode?: string;
   image_url?: string;
   category?: string;
   nutrition_info?: any;
   supermarket_location_id?: string;
+  unit?: string;
+  quantity?: number;
+  photo_url?: string;
   created_at?: string;
   created_by_user_id?: string;
   updated_at?: string;
@@ -75,15 +86,11 @@ export interface GroceryItem {
   id: string;
   product_id?: string;
   container_id?: string;
-  name: string;
-  unit?: string;
-  quantity?: number;
   rest_quantity?: number;
   expiration_date?: string;
   buy_date?: string;
   is_opened?: boolean;
   opened_date?: string;
-  photo_url?: string;
   notes?: string;
   created_at?: string;
   created_by_user_id?: string;

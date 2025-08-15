@@ -4,7 +4,6 @@ import {
   getGroceryItemById,
   addOrUpdateGroceryItem,
   deleteGroceryItem,
-  getGroceryItemsByBarcode,
   deleteGroceryItemsByProductId,
 } from '../entities/groceryItem';
 import { GroceryItem } from '../../types/entities';
@@ -28,7 +27,7 @@ import { GroceryItemQuery } from '../entities/groceryItem';
  * @example
  * const {
  *   items, loading, error, refresh, addOrUpdate, remove, removeByProductId, getById, getByBarcode
- * } = useGroceryItems({ category: 'fruits' });
+ * } = useGroceryItems();
  */
 export function useGroceryItems(query: GroceryItemQuery = {}) {
   const [items, setItems] = useState<GroceryItem[]>([]);
@@ -91,17 +90,6 @@ export function useGroceryItems(query: GroceryItemQuery = {}) {
       return undefined;
     }
   }, []);
-
-  const getByBarcode = useCallback(async (barcode: string) => {
-    setError(null);
-    try {
-      return await getGroceryItemsByBarcode(barcode);
-    } catch (e: any) {
-      setError(e?.error || 'ERR_GROCERY_ITEM_FETCH_FAILED');
-      return [];
-    }
-  }, []);
-
   return {
     items,
     loading,
@@ -111,6 +99,5 @@ export function useGroceryItems(query: GroceryItemQuery = {}) {
     remove,
     removeByProductId,
     getById,
-    getByBarcode,
   };
 }
