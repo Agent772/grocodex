@@ -78,7 +78,17 @@ export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<OpenF
   if (!res.ok) throw { error: 'ERR_OPENFOODFACTS_UNAVAILABLE' };
   const data = await res.json();
   if (data.product && typeof data.product === 'object') {
-    return data.product;
+    // Normalize to DB product-like object
+    return {
+      id: data.product.id || undefined,
+      name: data.product[productNameField] || data.product.product_name || '',
+      brand: data.product.brands || '',
+      unit: data.product.product_quantity_unit || '',
+      quantity: data.product.product_quantity || '',
+      barcode: barcode,
+      // include original fields for fallback
+      ...data.product
+    };
   }
   throw { error: 'ERR_NOT_FOUND' };
 }

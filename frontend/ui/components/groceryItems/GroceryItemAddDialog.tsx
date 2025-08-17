@@ -68,26 +68,6 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     }));
   };
 
-  // Function to check DB first, then call OFF API if not found
-  const handleLoadFromOFF = async () => {
-    if (!barcode) return;
-    setLoading(true);
-    try {
-      const dbProducts = await getByBarcode(barcode);
-      if (dbProducts && dbProducts.length > 0) {
-        fillAllFieldsFromProduct(dbProducts[0]);
-      } else {
-        const offProduct = await lookupOpenFoodFactsBarcode(barcode);
-        if (offProduct) {
-          fillAllFieldsFromProduct(offProduct);
-        }
-      }
-    } catch (e) {
-      // Optionally handle error (e.g., show message)
-    }
-    setLoading(false);
-  };
-
   // Auto-load when barcode is 13 digits
   useEffect(() => {
     const isValidBarcode = barcode && barcode.length === 13 && /^\d{13}$/.test(barcode);
@@ -121,6 +101,12 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
 
 
 
+  const clearDialogFields = () => {
+    setName('');
+    setBarcode('');
+    setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
+  };
+
   const handleSave = () => {
     const saveData = {
       groupName: name,
@@ -135,8 +121,14 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
       barcode,
     };
     // ...actual save logic using saveData...
+    clearDialogFields();
     onClose();
     if (onSaved) onSaved();
+  };
+
+  const handleCancel = () => {
+    clearDialogFields();
+    onClose();
   };
 
 
@@ -216,9 +208,13 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               onChange={e => setBarcode(e.target.value)}
               sx={{ maxWidth: 160 }}
             />
-            <IconButton color="primary" onClick={handleScanBarcode} disabled={scanning}>
-              <QrCodeScannerIcon />
-            </IconButton>
+            {loading && barcode ? (
+              <CircularProgress size={32} />
+            ) : (
+              <IconButton color="primary" onClick={handleScanBarcode} disabled={scanning}>
+                <QrCodeScannerIcon />
+              </IconButton>
+            )}
           </Box>
           <TextField
             label={t(UI_TRANSLATION_KEYS.GROCERY_BRAND, 'Brand')}
@@ -268,8 +264,8 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="inherit">{t(UI_TRANSLATION_KEYS.COMMON_CANCEL, 'Cancel')}</Button>
-        <Button onClick={handleSave} variant="contained" color="primary" disabled={!name.trim()}>
+  <Button onClick={handleCancel} color="inherit">{t(UI_TRANSLATION_KEYS.COMMON_CANCEL, 'Cancel')}</Button>
+  <Button onClick={handleSave} variant="contained" color="primary" disabled={!name.trim()}>
           {t(UI_TRANSLATION_KEYS.GROCERY_ADD, 'Add')}
         </Button>
       </DialogActions>
