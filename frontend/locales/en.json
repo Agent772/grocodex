@@ -1,0 +1,12 @@
+{
+  "app.title": "Grocodex - Grocery Inventory",
+  "nav.pantry": "Pantry",
+  "nav.shoppingList": "Shopping List",
+  "grocery.add": "Add Grocery Item",
+  "grocery.edit": "Edit Grocery Item",
+  "grocery.delete": "Delete Grocery Item",
+  "container.add": "Add Container",
+  "container.edit": "Edit Container",
+  "container.delete": "Delete Container",
+  "error.ERR_SHOPPING_LIST_ITEM_VALIDATION": "Shopping list item must have either a product or both name and unit filled."
+}

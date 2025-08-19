@@ -1,12 +1,15 @@
 import { RxJsonSchema } from 'rxdb';
 
-const productGroupSchema: RxJsonSchema = {
+import { ProductGroupDocType } from '../../../types/dbCollections';
+
+const productGroupSchema: RxJsonSchema<ProductGroupDocType> = {
   title: 'product_group',
   description: 'Group of products',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
-    id: { type: 'string', primary: true },
+    id: { type: 'string' },
     name: { type: 'string' },
     brand: { type: 'string' }
   },

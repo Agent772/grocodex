@@ -1,12 +1,15 @@
 import { RxJsonSchema } from 'rxdb';
 
-const supermarketProductSchema: RxJsonSchema = {
+import { SupermarketProductDocType } from '../../../types/dbCollections';
+
+const supermarketProductSchema: RxJsonSchema<SupermarketProductDocType> = {
   title: 'supermarket_product',
   description: 'Product available in a supermarket',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
-    id: { type: 'string', primary: true },
+    id: { type: 'string' },
     product_id: { type: 'string' },
     supermarket_id: { type: 'string' },
     in_store_location: { type: 'string' },
@@ -14,7 +17,7 @@ const supermarketProductSchema: RxJsonSchema = {
     updated_at: { type: 'string', format: 'date-time' }
   },
   required: ['id', 'product_id', 'supermarket_id', 'created_at', 'updated_at'],
-  indexes: ['product_id', 'supermarket_id']
+  indexes: ['product_id', 'supermarket_id', 'id']
 };
 
 export default supermarketProductSchema;

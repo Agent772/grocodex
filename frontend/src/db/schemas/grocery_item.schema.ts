@@ -1,12 +1,15 @@
 import { RxJsonSchema } from 'rxdb';
 
-const groceryItemSchema: RxJsonSchema = {
+import { GroceryItemDocType } from '../../../types/dbCollections';
+
+const groceryItemSchema: RxJsonSchema<GroceryItemDocType> = {
   title: 'grocery_item',
-  description: 'Grocery item in a container',
+  description: 'Grocery item (instance of product) in a container',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
-    id: { type: 'string', primary: true },
+    id: { type: 'string' },
     product_id: { type: 'string' },
     container_id: { type: 'string' },
     rest_quantity: { type: 'number' },

@@ -1,12 +1,15 @@
-import { RxJsonSchema } from 'rxdb';
 
-const containerSchema: RxJsonSchema = {
+import { RxJsonSchema } from 'rxdb';
+import { ContainerDocType } from '../../../types/dbCollections';
+
+const containerSchema: RxJsonSchema<ContainerDocType> = {
   title: 'container',
   description: 'Container for storing grocery items',
   version: 0,
   type: 'object',
+  primaryKey: 'id',
   properties: {
-    id: { type: 'string', primary: true },
+    id: { type: 'string' },
     name: { type: 'string' },
     parent_container_id: { type: ['string', 'null'] },
     description: { type: 'string' },

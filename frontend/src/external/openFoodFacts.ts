@@ -1,10 +1,10 @@
 // Open Food Facts integration utilities for Grocodex (local-first)
 
-import { Product, GroceryItem } from '../../types/entities';
-import { OpenFoodFactsProduct } from '../../types/openFoodFacts';
+import { Product, GroceryItem } from '../types/entities';
+import { OpenFoodFactsProduct } from '../types/openFoodFacts';
 import { addOrUpdateProduct, getProductsByBarcode } from './product';
 import { addOrUpdateGroceryItem } from './groceryItem';
-import i18n from '../../i18n';
+import i18n from '../i18n';
 
 
 const OFF_API_BASE = 'https://world.openfoodfacts.net';

@@ -1,0 +1,12 @@
+{
+  "app.title": "Grocodex - Lebensmittel Inventar",
+  "nav.pantry": "Vorrat",
+  "nav.shoppingList": "Einkaufsliste",
+  "grocery.add": "Lebensmittel hinzufügen",
+  "grocery.edit": "Lebensmittel bearbeiten",
+  "grocery.delete": "Lebensmittel löschen",
+  "container.add": "Behälter hinzufügen",
+  "container.edit": "Behälter bearbeiten",
+  "container.delete": "Behälter löschen",
+  "error.ERR_SHOPPING_LIST_ITEM_VALIDATION": "Ein Einkaufslisten-Eintrag muss entweder ein Produkt oder sowohl Name als auch Einheit enthalten."
+}
