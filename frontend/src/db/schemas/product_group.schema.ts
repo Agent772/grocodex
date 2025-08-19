@@ -1,6 +1,6 @@
+$schema: "http://json-schema.org/draft-07/schema#"
 import { RxJsonSchema } from 'rxdb';
-
-import { ProductGroupDocType } from '../../../types/dbCollections';
+import { ProductGroupDocType } from '../../types/dbCollections';
 
 const productGroupSchema: RxJsonSchema<ProductGroupDocType> = {
   title: 'product_group',
@@ -9,12 +9,12 @@ const productGroupSchema: RxJsonSchema<ProductGroupDocType> = {
   type: 'object',
   primaryKey: 'id',
   properties: {
-    id: { type: 'string' },
-    name: { type: 'string' },
-    brand: { type: 'string' }
+    id: { type: 'string', maxLength: 100 },
+    name: { type: 'string', maxLength: 200 },
+    brand: { type: 'string', maxLength: 100 }
   },
   required: ['id', 'name'],
-  indexes: ['name']
+  indexes: ['name'],
+  additionalProperties: false
 };
-
 export default productGroupSchema;

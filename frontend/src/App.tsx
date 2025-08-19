@@ -1,46 +1,18 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import Dialog from '@mui/material/Dialog';
-import UserProfile from './ui/components/users/UserProfile';
-import PantryOverview from './ui//pages/PantryOverview';
-import { UserProvider, useUser } from './db/hooks/UserContext';
-import LoginPage from './ui/pages/LoginPage';
-import { ThemeProvider, CssBaseline, useMediaQuery } from '@mui/material';
-import { getTheme } from './ui/theme/getTheme';
-import { ThemeToggle } from './ui/components/users/ThemeToggle';
+import React, { use, useState } from 'react';
+import { CssBaseline, useMediaQuery, Box, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { TopAppBar } from './ui/components/nav/TopAppBar';
 import { BottomNav } from './ui/components/nav/BottomNav';
 import { SideDrawer } from './ui/components/nav/SideDrawer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from './i18n';
 
-const DEFAULT_MODE: 'light' | 'dark' = 'dark';
-
-function Logo() {
-  return (
-    <Box display="flex" justifyContent="center" alignItems="center" mt={2}>
-      <img src="/logo.svg" alt="Grocodex logo" style={{ width: 96, height: 96 }} />
-    </Box>
-  );
-}
-
 function AppContent() {
-  const { theme, setTheme, user, login, loading, error } = useUser();
   const [nav, setNav] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const muiTheme = useMemo(() => getTheme(theme), [theme]);
+  const theme = useTheme();
   const { t } = useTranslation();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
-
-  const handleToggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  const handleProfileClick = () => {
-    setProfileOpen(true);
-  };
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleLogoClick = () => {
     if (!isMobile) setDrawerOpen(true);
@@ -55,30 +27,17 @@ function AppContent() {
       content = <Typography variant="h5" align="center">CookieDoo Import (Coming soon)</Typography>;
       break;
     case 2:
-      content = <PantryOverview />;
+      content = <Typography variant="h5" align="center">Pantry Overview (Coming soon)</Typography>;
       break;
     default:
       content = null;
   }
 
-  if (!user) {
-    return (
-      <I18nextProvider i18n={i18n}>
-        <ThemeProvider theme={muiTheme}>
-          <CssBaseline />
-          <LoginPage login={login} loading={loading} error={error} />
-        </ThemeProvider>
-      </I18nextProvider>
-    );
-  }
   return (
     <I18nextProvider i18n={i18n}>
-      <ThemeProvider theme={muiTheme}>
         <CssBaseline />
         <TopAppBar
-          onProfileClick={handleProfileClick}
           onLogoClick={handleLogoClick}
-          avatarSrc={user?.avatar}
         />
         {!isMobile && (
           <>
@@ -101,27 +60,14 @@ function AppContent() {
             )}
           </>
         )}
-        <Box pt={8} pb={8} minHeight="100vh" display="flex" flexDirection="column" alignItems="center" bgcolor={muiTheme.palette.background.default}>
-        <Dialog open={profileOpen} onClose={() => setProfileOpen(false)} maxWidth="xs" fullWidth>
-          <UserProfile
-            onClose={() => setProfileOpen(false)}
-            mode={theme}
-            onToggleTheme={handleToggleTheme}
-            setAppTheme={setTheme}
-          />
-        </Dialog>
+        <Box pt={8} pb={8} minHeight="100vh" display="flex" flexDirection="column" alignItems="center" bgcolor={theme.palette.background.default}>
           {content}
         </Box>
         {isMobile && <BottomNav value={nav} onChange={(_, v) => setNav(v)} />}
-      </ThemeProvider>
     </I18nextProvider>
   );
 }
 
-const App = () => (
-  <UserProvider>
-    <AppContent />
-  </UserProvider>
-);
+const App = () => <AppContent />;
 
 export default App;

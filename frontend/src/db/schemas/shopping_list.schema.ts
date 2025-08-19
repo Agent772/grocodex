@@ -1,6 +1,6 @@
+$schema: "http://json-schema.org/draft-07/schema#"
 import { RxJsonSchema } from 'rxdb';
-
-import { ShoppingListDocType } from '../../../types/dbCollections';
+import { ShoppingListDocType } from '../../types/dbCollections';
 
 const shoppingListSchema: RxJsonSchema<ShoppingListDocType> = {
   title: 'shopping_list',
@@ -9,13 +9,13 @@ const shoppingListSchema: RxJsonSchema<ShoppingListDocType> = {
   type: 'object',
   primaryKey: 'id',
   properties: {
-    id: { type: 'string' },
-    name: { type: 'string' },
+    id: { type: 'string', maxLength: 100 },
+    name: { type: 'string', maxLength: 200 },
     created_at: { type: 'string', format: 'date-time' },
     updated_at: { type: 'string', format: 'date-time' }
   },
   required: ['id', 'name', 'created_at', 'updated_at'],
-  indexes: ['name', 'id']
+  indexes: ['name', 'id'],
+  additionalProperties: false
 };
-
 export default shoppingListSchema;

@@ -1,10 +1,8 @@
-
 import { createRxDatabase, addRxPlugin, RxDatabase, RxCollectionCreator } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { addCreatedAtHook, addUpdatedAtHook } from './hooks/timestampHooks';
 import { addRestQuantityDefaultHook } from './hooks/groceryItemHooks';
-import { GrocodexCollections } from '../../types/dbCollections';
-
+import { GrocodexCollections } from '../types/dbCollections';
 import containerSchema from './schemas/container.schema';
 import supermarketSchema from './schemas/supermarket.schema';
 import supermarketProductSchema from './schemas/supermarket_product.schema';
@@ -13,21 +11,28 @@ import productSchema from './schemas/product.schema';
 import groceryItemSchema from './schemas/grocery_item.schema';
 import shoppingListSchema from './schemas/shopping_list.schema';
 import shoppingListItemSchema from './schemas/shopping_list_item.schema';
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 // Add RxDB plugins as needed
-addRxPlugin(require('rxdb/plugins/leader-election'));
-addRxPlugin(require('rxdb/plugins/update'));
-addRxPlugin(require('rxdb/plugins/replication'));
+// addRxPlugin(RxDBDevModePlugin);
+addRxPlugin(RxDBLeaderElectionPlugin);
+addRxPlugin(RxDBUpdatePlugin);
+// No addRxPlugin for replication-couchdb, use replicateCouchDB directly for sync
 
 export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
+
   // Create the database
   const db = await createRxDatabase<GrocodexCollections>({
     name: 'grocodex',
     storage: getRxStorageDexie(),
     multiInstance: true,
     eventReduce: true,
-    ignoreDuplicate: true
+    closeDuplicates: true
   });
+  
 
   // Collection definitions
   const collections: { [key: string]: RxCollectionCreator } = {
@@ -46,15 +51,15 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
     if (!db.collections[name]) {
       await db.addCollections({ [name]: config });
     }
-    const collection = db.collections[name];
-    if (collection) {
-      addCreatedAtHook(collection);
-      addUpdatedAtHook(collection);
-      // Add rest_quantity default hook for grocery_item collection
-      if (name === 'grocery_item') {
-        addRestQuantityDefaultHook(collection, db);
-      }
-    }
+    // const collection = db.collections[name];
+    // if (collection) {
+    //   addCreatedAtHook(collection);
+    //   addUpdatedAtHook(collection);
+    //   // Add rest_quantity default hook for grocery_item collection
+    //   if (name === 'grocery_item') {
+    //     addRestQuantityDefaultHook(collection, db);
+    //   }
+    // }
   }
 
   return db;

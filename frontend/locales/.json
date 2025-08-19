@@ -1,0 +1,21 @@
+{
+  "container": {
+    "add": "Add Container"
+  },
+  "grocery": {
+    "add": "Add Grocery Item"
+  },
+  "loading": {
+    "dbReady": "",
+    "initDb": "",
+    "initError": "",
+    "loadingUI": "",
+    "offline": "",
+    "synced": "",
+    "syncError": "",
+    "syncing": ""
+  },
+  "pantry": {
+    "search": "Search by name or brand"
+  }
+}
