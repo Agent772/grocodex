@@ -81,13 +81,5 @@ export interface ShoppingListItemDocType {
   updated_at?: string;
 }
 
-export type GrocodexCollections = {
-  container: ContainerDocType;
-  supermarket: SupermarketDocType;
-  supermarket_product: SupermarketProductDocType;
-  product_group: ProductGroupDocType;
-  product: ProductDocType;
-  grocery_item: GroceryItemDocType;
-  shopping_list: ShoppingListDocType;
-  shopping_list_item: ShoppingListItemDocType;
-};
+
+export type { GrocodexCollections } from './rxdb.d';

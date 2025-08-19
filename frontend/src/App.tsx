@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import { TopAppBar } from './ui/components/nav/TopAppBar';
 import { BottomNav } from './ui/components/nav/BottomNav';
 import { SideDrawer } from './ui/components/nav/SideDrawer';
+import { PantryOverview } from './ui/pages/PantryOverview';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from './i18n';
 
@@ -27,7 +28,7 @@ function AppContent() {
       content = <Typography variant="h5" align="center">CookieDoo Import (Coming soon)</Typography>;
       break;
     case 2:
-      content = <Typography variant="h5" align="center">Pantry Overview (Coming soon)</Typography>;
+      content = <PantryOverview />;
       break;
     default:
       content = null;
