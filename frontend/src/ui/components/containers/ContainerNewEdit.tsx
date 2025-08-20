@@ -28,11 +28,12 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
   containerOptions = [],
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [name, setName] = React.useState(container?.name || '');
   const [parent, setParent] = React.useState<ContainerDocType | null>(parentContainer || null);
   const [imagePreview, setImagePreview] = useState<string | undefined>(container?.photo_url);
   const [imageBlob, setImageBlob] = useState<Blob | undefined>(undefined);
-  const [color, setColor] = useState<string>(container?.ui_color || '#2196f3');
+  const [color, setColor] = useState<string>(container?.ui_color || theme.palette.secondary.main);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { addOrUpdateContainer } = useContainerActions();
@@ -60,6 +61,19 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
     setName(container?.name || '');
     setParent(parentContainer || null);
   }, [container, parentContainer, open]);
+
+  // Reset form fields when dialog is closed
+  React.useEffect(() => {
+    if (!open) {
+      setName('');
+      setParent(null);
+      setImagePreview(undefined);
+      setImageBlob(undefined);
+      setColor(theme.palette.secondary.main);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
+    }
+  }, [open]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,14 +114,13 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
-  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth={isMobile ? undefined : 'sm'}
+      maxWidth={isMobile ? false : 'sm'}
       fullWidth
       sx={{
         '& .MuiDialog-paper': {
@@ -132,8 +145,15 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
             : t(UI_TRANSLATION_KEYS.CONTAINER_ADD_TITLE, 'Add New Container')}
         </DialogTitle>
         <DialogContent>
-          {/* Top row: Parent container selector */}
-          <Box mb={2}>
+          {/* Top row: Color picker and parent container selector */}
+          <Box mb={2} display="flex" alignItems="center" gap={2} sx={{ alignItems: 'center' }}>
+            <input
+              type="color"
+              value={color}
+              onChange={event => setColor(event.target.value)}
+              style={{ width: 40, height: 40, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+              title="Container Color"
+            />
             <Autocomplete
               options={containerOptions}
               getOptionLabel={getBreadcrumbLabel}
@@ -144,7 +164,7 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
                   {...params}
                   label={t(UI_TRANSLATION_KEYS.CONTAINER_PARENT, 'Parent Container')}
                   variant="standard"
-                  sx={{ minWidth: 120 }}
+                  sx={{ minWidth: isMobile ? undefined : 120, width: isMobile ? '100%' : '100%' }}
                 />
               )}
               isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -153,11 +173,11 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
               filterOptions={(options, state) =>
                 options.filter(opt => getBreadcrumbLabel(opt).toLowerCase().includes(state.inputValue.toLowerCase()))
               }
-              sx={{ minWidth: isMobile ? undefined : 180, width: isMobile ? '100%' : undefined }}
+              sx={{ minWidth: isMobile ? undefined : 180, width: isMobile ? '100%' : '100%', mb: 2 }}
             />
           </Box>
-          {/* Next row: Container name */}
-          <Box mb={2}>
+          {/* 2nd row: Container name and image upload/preview */}
+          <Box mb={2} display="flex" alignItems="center" gap={2}>
             <TextField
               autoFocus
               label={t(UI_TRANSLATION_KEYS.CONTAINER_NAME, 'Container Name')}
@@ -165,19 +185,10 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
               onChange={e => setName(e.target.value)}
               variant="standard"
               required
-              sx={{ flex: 1, minWidth: 120, width: isMobile ? '100%' : undefined }}
+              sx={{ flex: 1, minWidth: isMobile ? undefined : 120, width: isMobile ? '100%' : undefined }}
             />
-          </Box>
-          {/* Next row: Color picker and image upload */}
-          <Box display="flex" alignItems="center" gap={2} mb={2}>
-            <input
-              type="color"
-              value={color}
-              onChange={event => setColor(event.target.value)}
-              style={{ width: 40, height: 40, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
-              title={t(UI_TRANSLATION_KEYS.CONTAINER_COLOR, 'Container Color')}
-            />
-            {!imagePreview && (
+            {/* Image upload buttons or preview */}
+            {!imagePreview ? (
               <Box display="flex" gap={1}>
                 <Tooltip title={t(UI_TRANSLATION_KEYS.UPLOAD_IMAGE, 'Upload Image')}>
                   <IconButton color="secondary" component="span" onClick={() => fileInputRef.current?.click()}>
@@ -189,37 +200,41 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
                     <PhotoCameraIcon/>
                   </IconButton>
                 </Tooltip>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleImageChange}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  ref={cameraInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleImageChange}
+                />
               </Box>
-            )}
-            {imagePreview && (
-              <Box position="relative">
-                <img src={imagePreview} alt="Container preview" style={{ maxWidth: 64, maxHeight: 64, borderRadius: 8 }} />
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={handleDeleteImage}
-                  sx={{ position: 'absolute', top: 4, right: 4, background: 'rgba(255,255,255,0.7)' }}
-                  aria-label={t(UI_TRANSLATION_KEYS.CONTAINER_DELETE_IMAGE, 'Delete Image')}
-                >
-                  <DeleteIcon/>
-                </IconButton>
+            ) : undefined}
+          </Box>
+          <Box>
+            {imagePreview ? (
+              <Box position="relative" ml={2} display="flex" justifyContent="center" alignItems="center" width="100%">
+                <Box position="relative" display="inline-block">
+                  <img src={imagePreview} alt="Container preview" style={{ maxWidth: 180, maxHeight: 140, borderRadius: 8, display: 'block' }} />
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={handleDeleteImage}
+                    sx={{ position: 'absolute', top: 4, right: 4, background: 'rgba(255,255,255,0.7)', zIndex: 2 }}
+                    aria-label={t(UI_TRANSLATION_KEYS.CONTAINER_DELETE_IMAGE, 'Delete Image')}
+                  >
+                    <DeleteIcon/>
+                  </IconButton>
+                </Box>
               </Box>
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              onChange={handleImageChange}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              ref={cameraInputRef}
-              style={{ display: 'none' }}
-              onChange={handleImageChange}
-            />
+          ) : undefined}
           </Box>
         </DialogContent>
         <DialogActions>
