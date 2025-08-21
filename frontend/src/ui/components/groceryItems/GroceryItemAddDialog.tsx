@@ -3,13 +3,16 @@ import { useRxDB } from '../../../db/RxDBProvider';
 import { useProductGroupActions } from '../../hooks/useProductGroupActions';
 import { useProductActions } from '../../hooks/useProductActions';
 import { Fab, Autocomplete, Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, MenuItem, IconButton, CircularProgress } from '@mui/material';
+import { ContainerBreadcrumbLabel, getContainerBreadcrumbLabel } from '../containers/ContainerBreadcrumbLabel';
+import { useContainerSearch } from '../../hooks/useContainerSearch';
+import { findGroceryItemByProductId } from '../../hooks/useGroceryItemSearch';
 import { ArrowDropDown as ArrowDropDownIcon, Save as SaveIcon, QrCodeScanner as QrCodeScannerIcon, Close as CloseIcon, SaveAs as SaveAsIcon, LibraryAdd as LibraryAddIcon, DataSaverOn as DataSaverOnIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
 import { UNIT_OPTIONS } from '../../../types/unitOptions';
 import { lookupOpenFoodFactsBarcode } from '../../../external/openFoodFacts';
 import { useGroceryItemActions } from '../../hooks/useGroceryItemActions';
-import { GroceryItemDocType } from '../../../types/dbCollections';
+import { GroceryItemDocType, ContainerDocType } from '../../../types/dbCollections';
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
 import { useProductSearchByBarcode } from '../../hooks/useProductSearchByBarcode';
 import { useProductSearchByName } from '../../hooks/useProductSearchByName';
@@ -21,7 +24,12 @@ interface GroceryItemAddDialogProps {
 }
 
 
+
 const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClose, onSaved }) => {
+  const db = useRxDB();
+  // Container autocomplete state
+  const [container, setContainer] = useState<ContainerDocType | null>(null);
+  const { containers: containerOptions } = useContainerSearch();
   // Save actions
   const SAVE_ACTIONS = [
     { key: 'saveClose', label: 'Save & Close', icon: <SaveIcon /> },
@@ -93,9 +101,9 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   };
 
   // Fill all fields from a DB product or API result object
-  const fillAllFieldsFromProduct = (product: any) => {
+  const fillAllFieldsFromProduct = async (product: any, dbInstance: any) => {
+    console.log('[fillAllFieldsFromProduct] product:', product);
     setName(product.name || product.product_name || product.title || '');
-    // Fill barcode directly, but do not trigger barcode search effect
     setBarcode(product.barcode || '');
     let unit = product.unit || product.unit_name || product.quantity_unit || product.product_quantity_unit || '';
     if (!unit && typeof product.quantity === 'string') {
@@ -122,21 +130,31 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
       expirationDate: product.expirationDate || '',
       notes: product.notes || '',
     }));
+
+    // Prefill container if a grocery item exists for this product
+    if (product.id && dbInstance) {
+      console.log('[fillAllFieldsFromProduct] looking for grocery item with product_id:', product.id);
+      const groceryItem = await findGroceryItemByProductId(dbInstance, product.id);
+      console.log('[fillAllFieldsFromProduct] found groceryItem:', groceryItem);
+      if (groceryItem && groceryItem.container_id) {
+        const foundContainer = containerOptions.find(c => c.id === groceryItem.container_id);
+        console.log('[fillAllFieldsFromProduct] foundContainer:', foundContainer);
+        if (foundContainer) setContainer(foundContainer);
+      }
+    }
   };
 
-  // Barcode search effect
   // Barcode search effect
   // Only trigger if barcode is changed by manual input, not by name selection
   useEffect(() => {
     const isValidBarcode = barcode && barcode.length === 13 && /^\d{13}$/.test(barcode);
-    // Only run if barcode is changed and not just set from name selection
     if (isValidBarcode && barcode !== lastSearchedBarcode) {
       (async () => {
         setLoading(true);
         try {
           const product = await searchProduct(barcode);
           if (product) {
-            fillAllFieldsFromProduct(product);
+            await fillAllFieldsFromProduct(product, db);
           }
           setLastSearchedBarcode(barcode);
         } catch (e) {
@@ -145,7 +163,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
         setLoading(false);
       })();
     }
-  }, [barcode]);
+  }, [barcode, containerOptions, db]);
 
   const handleManualFieldChange = (field: string, value: string) => {
     setManualFields(prev => ({ ...prev, [field]: value }));
@@ -155,9 +173,9 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     setName('');
     setBarcode('');
     setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
+    setContainer(null);
   };
 
-  const db = useRxDB();
   const handleSave = async () => {
     // 1. Check for existing ProductGroup by name/brand
     let productGroup: ProductGroupDocType | null = await findProductGroupByName(name);
@@ -197,7 +215,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     const groceryItem: GroceryItemDocType = {
       id: crypto.randomUUID(),
       product_id: product.id,
-      container_id: '', // Add container selection logic if needed
+      container_id: container ? container.id : '',
       rest_quantity: manualFields.quantity ? Number(manualFields.quantity) : undefined,
       expiration_date: manualFields.expirationDate || undefined,
       buy_date: manualFields.buyDate || undefined,
@@ -249,6 +267,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
       setName('');
       setBarcode('');
       setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
+      setContainer(null);
       setLastSearchedBarcode('');
     }
   }, [open]);
@@ -265,12 +284,12 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             getOptionLabel={option => option.name || ''}
             inputValue={name}
             onInputChange={(_, value) => setName(value)}
-            onChange={(_, value) => {
+            onChange={async (_, value) => {
               if (typeof value === 'string') {
                 setName(value);
               } else if (value && typeof value === 'object') {
                 setName(value.name || '');
-                fillAllFieldsFromProduct(value);
+                await fillAllFieldsFromProduct(value, db);
               }
             }}
             renderInput={params => (
@@ -346,6 +365,27 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             value={manualFields.notes}
             onChange={e => handleManualFieldChange('notes', e.target.value)}
             fullWidth
+          />
+          {/* Container autocomplete field */}
+          <Autocomplete
+            options={containerOptions}
+            getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions)}
+            value={container}
+            onChange={(_, value) => setContainer(value)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <ContainerBreadcrumbLabel container={option} containerOptions={containerOptions} />
+              </li>
+            )}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label={t(UI_TRANSLATION_KEYS.GROCERY_CONTAINER, 'Container / Location')}
+                fullWidth
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            sx={{ mt: 2 }}
           />
         </Box>
       </DialogContent>

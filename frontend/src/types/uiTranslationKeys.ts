@@ -105,5 +105,6 @@ export const UI_TRANSLATION_KEYS = {
   GROCERY_ADD: 'grocery.add',
   GROCERY_BUY_DATE: 'grocery.buyDate',
   GROCERY_EXPIRATION_DATE: 'grocery.expirationDate',
+  GROCERY_CONTAINER: 'grocery.container'
 } as const;
 
