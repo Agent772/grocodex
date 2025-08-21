@@ -31,6 +31,8 @@ export interface ProductGroupDocType {
   id: string;
   name: string;
   brand?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ProductDocType {

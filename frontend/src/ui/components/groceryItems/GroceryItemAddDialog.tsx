@@ -1,13 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
+import { useRxDB } from '../../../db/RxDBProvider';
+import { useProductGroupActions } from '../../hooks/useProductGroupActions';
+import { useProductActions } from '../../hooks/useProductActions';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, MenuItem, IconButton, CircularProgress } from '@mui/material';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import { useTranslation } from 'react-i18next';
 import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
 import { UNIT_OPTIONS } from '../../../types/unitOptions';
-import { useProducts } from '../../../db/hooks/useProducts';
-import { searchProductsAndGroups } from '../../../db/search/searchProductsAndGroups';
-import { lookupOpenFoodFactsBarcode } from '../../../db/entities/openFoodFacts';
+import { lookupOpenFoodFactsBarcode } from '../../../external/openFoodFacts';
+import { useGroceryItemActions } from '../../hooks/useGroceryItemActions';
+import { GroceryItemDocType } from '../../../types/dbCollections';
+import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
+import { useProductSearchByBarcode } from '../../hooks/useProductSearchByBarcode';
+import { useProductSearchByName } from '../../hooks/useProductSearchByName';
+import Autocomplete from '@mui/material/Autocomplete';
 
 
 interface GroceryItemAddDialogProps {
@@ -18,13 +24,19 @@ interface GroceryItemAddDialogProps {
 
 
 const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClose, onSaved }) => {
+  const { findProductGroupByName, addProductGroup } = useProductGroupActions();
+  const { findProductByNameUnitQuantityBarcode, addProduct } = useProductActions();
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [manualFields, setManualFields] = useState({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
   const [barcode, setBarcode] = useState('');
-  const { getByBarcode, getByName } = useProducts();
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [lastSearchedBarcode, setLastSearchedBarcode] = useState('');
+  const { addGroceryItem } = useGroceryItemActions();
+  const { searchProduct } = useProductSearchByBarcode();
+  const { searchProducts } = useProductSearchByName();
+  const [productOptions, setProductOptions] = useState<any[]>([]);
 
   // Scan barcode handler (mock, replace with real scanner integration)
   const handleScanBarcode = async () => {
@@ -41,6 +53,8 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   // Fill all fields from a DB product or API result object
   const fillAllFieldsFromProduct = (product: any) => {
     setName(product.name || product.product_name || product.title || '');
+    // Fill barcode directly, but do not trigger barcode search effect
+    setBarcode(product.barcode || '');
     let unit = product.unit || product.unit_name || product.quantity_unit || product.product_quantity_unit || '';
     if (!unit && typeof product.quantity === 'string') {
       const match = product.quantity.match(/\d+\s*([a-zA-Z]+)/);
@@ -68,38 +82,32 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     }));
   };
 
-  // Auto-load when barcode is 13 digits
+  // Barcode search effect
+  // Barcode search effect
+  // Only trigger if barcode is changed by manual input, not by name selection
   useEffect(() => {
     const isValidBarcode = barcode && barcode.length === 13 && /^\d{13}$/.test(barcode);
-    if (isValidBarcode) {
+    // Only run if barcode is changed and not just set from name selection
+    if (isValidBarcode && barcode !== lastSearchedBarcode) {
       (async () => {
         setLoading(true);
         try {
-          console.log('Barcode lookup triggered for:', barcode);
-          const dbProducts = await getByBarcode(barcode);
-          console.log('DB products:', dbProducts);
-          if (dbProducts && dbProducts.length > 0) {
-            fillAllFieldsFromProduct(dbProducts[0]);
-          } else {
-            const offProduct = await lookupOpenFoodFactsBarcode(barcode);
-            console.log('Open Food Facts product:', offProduct);
-            if (offProduct) {
-              fillAllFieldsFromProduct(offProduct);
-            }
+          const product = await searchProduct(barcode);
+          if (product) {
+            fillAllFieldsFromProduct(product);
           }
+          setLastSearchedBarcode(barcode);
         } catch (e) {
-          console.error('Barcode lookup error:', e);
+          // Optionally handle error
         }
         setLoading(false);
       })();
     }
-  }, [barcode, getByBarcode]);
+  }, [barcode]);
 
   const handleManualFieldChange = (field: string, value: string) => {
     setManualFields(prev => ({ ...prev, [field]: value }));
   };
-
-
 
   const clearDialogFields = () => {
     setName('');
@@ -107,20 +115,57 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
   };
 
-  const handleSave = () => {
-    const saveData = {
-      groupName: name,
-      productName: name,
-      groupBrand: manualFields.productBrand,
-      productBrand: manualFields.productBrand,
-      unit: manualFields.unit,
-      quantity: manualFields.quantity,
-      buyDate: manualFields.buyDate,
-      expirationDate: manualFields.expirationDate,
-      notes: manualFields.notes,
-      barcode,
+  const db = useRxDB();
+  const handleSave = async () => {
+    // 1. Check for existing ProductGroup by name/brand
+    let productGroup: ProductGroupDocType | null = await findProductGroupByName(name);
+    if (!productGroup) {
+      productGroup = await addProductGroup({
+        id: crypto.randomUUID(),
+        name,
+        brand: manualFields.productBrand,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    // 2. Check for existing Product by name/unit/barcode
+    let product: ProductDocType | null = await findProductByNameUnitQuantityBarcode(
+      name,
+      manualFields.unit,
+      Number(manualFields.quantity) || 0,
+      barcode
+    );
+    if (!product) {
+      product = await addProduct({
+        id: crypto.randomUUID(),
+        product_group_id: productGroup.id,
+        name,
+        brand: manualFields.productBrand,
+        barcode,
+        unit: manualFields.unit,
+        quantity: Number(manualFields.quantity) || 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    // 3. Create GroceryItem referencing Product
+    if (!product) return;
+    const groceryItem: GroceryItemDocType = {
+      id: crypto.randomUUID(),
+      product_id: product.id,
+      container_id: '', // Add container selection logic if needed
+      rest_quantity: manualFields.quantity ? Number(manualFields.quantity) : undefined,
+      expiration_date: manualFields.expirationDate || undefined,
+      buy_date: manualFields.buyDate || undefined,
+      is_opened: false,
+      opened_date: undefined,
+      notes: manualFields.notes || undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
-    // ...actual save logic using saveData...
+    await addGroceryItem(groceryItem);
     clearDialogFields();
     onClose();
     if (onSaved) onSaved();
@@ -132,61 +177,39 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   };
 
 
-  // Debounced search on name change
+  // Autocomplete search on name change with debounce and async handling
   useEffect(() => {
-    if (!name) return;
+    if (!name || name.length < 2) {
+      setProductOptions([]);
+      return;
+    }
+    let active = true;
+    setProductOptions([]);
     const handler = setTimeout(() => {
       (async () => {
-        const results = await searchProductsAndGroups(name);
-        if (results.length > 0) {
-          // For now, just use the first result
-          fillAllFieldsFromProduct(results[0].item);
-          // TODO: handle multiple results (show selection UI)
+        try {
+          const results = await searchProducts(name);
+          if (active) setProductOptions(results);
+        } catch (e) {
+          if (active) setProductOptions([]);
         }
       })();
-    }, 400); // 400ms debounce
-    return () => clearTimeout(handler);
+    }, 300); // debounce 300ms
+    return () => {
+      active = false;
+      clearTimeout(handler);
+    };
   }, [name]);
 
-    // Auto-load when barcode is 13 digits
-    useEffect(() => {
-      const isValidBarcode = barcode && barcode.length === 13 && /^\d{13}$/.test(barcode);
-      if (isValidBarcode) {
-        (async () => {
-          setLoading(true);
-          try {
-            const dbProducts = await getByBarcode(barcode);
-            if (dbProducts && dbProducts.length > 0) {
-              fillAllFieldsFromProduct(dbProducts[0]);
-            } else {
-              const offProduct = await lookupOpenFoodFactsBarcode(barcode);
-              if (offProduct) {
-                fillAllFieldsFromProduct(offProduct);
-              }
-            }
-          } catch (e) {
-            // Optionally handle error
-          }
-          setLoading(false);
-        })();
-      }
-    }, [barcode, getByBarcode]);
-
-  // Debounced search on name change
+  // Reset form fields when dialog is closed
   useEffect(() => {
-    if (!name) return;
-    const handler = setTimeout(() => {
-      (async () => {
-        const results = await searchProductsAndGroups(name);
-        if (results.length > 0) {
-          // For now, just use the first result
-          fillAllFieldsFromProduct(results[0].item);
-          // TODO: handle multiple results (show selection UI)
-        }
-      })();
-    }, 400); // 400ms debounce
-    return () => clearTimeout(handler);
-  }, [name]);
+    if (!open) {
+      setName('');
+      setBarcode('');
+      setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
+      setLastSearchedBarcode('');
+    }
+  }, [open]);
 
   // --- All hooks and logic above ---
   return (
@@ -194,12 +217,28 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
       <DialogTitle>{t(UI_TRANSLATION_KEYS.GROCERY_ADD_TITLE, 'Add Grocery Item')}</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2}>
-          <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_NAME, 'Name')}
-            value={name}
-            onChange={e => setName(e.target.value)}
-            fullWidth
-            autoFocus
+          <Autocomplete
+            freeSolo
+            options={productOptions}
+            getOptionLabel={option => option.name || ''}
+            inputValue={name}
+            onInputChange={(_, value) => setName(value)}
+            onChange={(_, value) => {
+              if (typeof value === 'string') {
+                setName(value);
+              } else if (value && typeof value === 'object') {
+                setName(value.name || '');
+                fillAllFieldsFromProduct(value);
+              }
+            }}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label={t(UI_TRANSLATION_KEYS.GROCERY_NAME, 'Name')}
+                fullWidth
+                autoFocus
+              />
+            )}
           />
           <Box display="flex" alignItems="center" gap={1}>
             <TextField

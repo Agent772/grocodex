@@ -33,6 +33,15 @@ const PantryOverview: React.FC = () => {
         Add Container
       </Button>
       <AddContainerDialog open={addContainerOpen} onClose={() => setAddContainerOpen(false)} containerOptions={containers} />
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mb: 2, mr: 2 }}
+        onClick={() => setAddGroceryOpen(true)}
+      >
+        Add Grocery Item
+      </Button>
+      <GroceryItemAddDialog open={addGroceryOpen} onClose={() => setAddGroceryOpen(false)} />
       {/* Debug table: Containers */}
       <TableContainer component={Paper} sx={{ mt: 4, maxWidth: 480 }}>
         <Table size="small">

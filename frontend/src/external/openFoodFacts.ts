@@ -1,10 +1,8 @@
 // Open Food Facts integration utilities for Grocodex (local-first)
 
-import { Product, GroceryItem } from '../types/entities';
 import { OpenFoodFactsProduct } from '../types/openFoodFacts';
-import { addOrUpdateProduct, getProductsByBarcode } from './product';
-import { addOrUpdateGroceryItem } from './groceryItem';
 import i18n from '../i18n';
+import { ProductDocType, GroceryItemDocType } from '../types/dbCollections';
 
 
 const OFF_API_BASE = 'https://world.openfoodfacts.net';
@@ -45,11 +43,11 @@ export async function searchOpenFoodFacts(name: string): Promise<OpenFoodFactsPr
  * Looks up a product from the Open Food Facts API using the provided barcode.
  *
  * @param barcode - The barcode of the product to look up.
- * @returns A promise that resolves to the `OpenFoodFactsProduct` if found.
+ * @returns A promise that resolves to the ProductDocType if found.
  * @throws An error object with `{ error: 'ERR_OPENFOODFACTS_UNAVAILABLE' }` if the API is unavailable.
  * @throws An error object with `{ error: 'ERR_NOT_FOUND' }` if the product is not found.
  */
-export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<OpenFoodFactsProduct> {
+export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<ProductDocType> {
   // Detect language code from i18n
   const lang = i18n.language || 'de';
   // Detect country code (try from browser, fallback to 'at')
@@ -68,6 +66,10 @@ export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<OpenF
     'brands',
     'product_quantity',
     'product_quantity_unit',
+    'barcode',
+    'image_url',
+    'created_at',
+    'updated_at',
   ].join(',');
   const url = `${OFF_API_BASE}/api/v3/product/${barcode}.json?cc=${country}&lc=${lang}&fields=${fields}`;
   const res = await fetch(url, {
@@ -78,69 +80,19 @@ export async function lookupOpenFoodFactsBarcode(barcode: string): Promise<OpenF
   if (!res.ok) throw { error: 'ERR_OPENFOODFACTS_UNAVAILABLE' };
   const data = await res.json();
   if (data.product && typeof data.product === 'object') {
-    // Normalize to DB product-like object
+    // Normalize to ProductDocType
     return {
-      id: data.product.id || undefined,
+      id: data.product.id || crypto.randomUUID(),
+      product_group_id: '', // Not available from OFF
       name: data.product[productNameField] || data.product.product_name || '',
       brand: data.product.brands || '',
-      unit: data.product.product_quantity_unit || '',
-      quantity: data.product.product_quantity || '',
       barcode: barcode,
-      // include original fields for fallback
-      ...data.product
+      unit: data.product.product_quantity_unit || '',
+      quantity: Number(data.product.product_quantity) || 1,
+      image_url: data.product.image_url,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
   }
   throw { error: 'ERR_NOT_FOUND' };
-}
-
-/**
- * Creates a new product and grocery item from an Open Food Facts product object.
- * 
- * This function checks if a product with the given barcode already exists.
- * If it exists, it uses the existing product; otherwise, it creates a new product entry.
- * Then, it creates a grocery item associated with the product.
- * 
- * @param offProduct - The Open Food Facts product object containing product details.
- * @param container_id - (Optional) The ID of the container to associate with the grocery item.
- * @param quantity - (Optional) The quantity of the grocery item. Defaults to 1.
- * @param expiration_date - (Optional) The expiration date of the grocery item.
- * @returns A promise that resolves to an object containing the created or found product and the new grocery item.
- */
-export async function createProductAndGroceryItemFromOFF(
-  offProduct: OpenFoodFactsProduct,
-  container_id?: string,
-  quantity: number = 1,
-  expiration_date?: string
-): Promise<{ product: Product; groceryItem: GroceryItem }> {
-  // Check if product already exists by barcode
-  let product: Product | undefined = undefined;
-  const existing = await getProductsByBarcode(offProduct.code);
-  if (existing.length > 0) {
-    product = existing[0];
-  } else {
-    product = {
-      id: crypto.randomUUID(),
-      name: offProduct.product_name || 'Unknown',
-      brand: offProduct.brands,
-      open_food_facts_id: offProduct.code,
-      barcode: offProduct.code,
-      image_url: offProduct.image_url,
-      category: offProduct.categories_tags?.[0],
-      nutrition_info: offProduct.nutriments,
-      created_at: new Date().toISOString(),
-    };
-    await addOrUpdateProduct(product);
-  }
-  // Create grocery item
-  const groceryItem: GroceryItem = {
-    id: crypto.randomUUID(),
-    product_id: product.id,
-    name: product.name,
-    container_id,
-    quantity,
-    expiration_date,
-    created_at: new Date().toISOString(),
-  };
-  await addOrUpdateGroceryItem(groceryItem);
-  return { product, groceryItem };
 }
