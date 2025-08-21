@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useRxDB } from '../../../db/RxDBProvider';
 import { useProductGroupActions } from '../../hooks/useProductGroupActions';
 import { useProductActions } from '../../hooks/useProductActions';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, MenuItem, IconButton, CircularProgress } from '@mui/material';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import { Fab, Autocomplete, Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, MenuItem, IconButton, CircularProgress } from '@mui/material';
+import { ArrowDropDown as ArrowDropDownIcon, Save as SaveIcon, QrCodeScanner as QrCodeScannerIcon, Close as CloseIcon, SaveAs as SaveAsIcon, LibraryAdd as LibraryAddIcon, DataSaverOn as DataSaverOnIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
 import { UNIT_OPTIONS } from '../../../types/unitOptions';
@@ -13,8 +13,6 @@ import { GroceryItemDocType } from '../../../types/dbCollections';
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
 import { useProductSearchByBarcode } from '../../hooks/useProductSearchByBarcode';
 import { useProductSearchByName } from '../../hooks/useProductSearchByName';
-import Autocomplete from '@mui/material/Autocomplete';
-
 
 interface GroceryItemAddDialogProps {
   open: boolean;
@@ -24,6 +22,50 @@ interface GroceryItemAddDialogProps {
 
 
 const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClose, onSaved }) => {
+  // Save actions
+  const SAVE_ACTIONS = [
+    { key: 'saveClose', label: 'Save & Close', icon: <SaveIcon /> },
+    { key: 'addNext', label: 'Save & Add Next', icon: <LibraryAddIcon /> },
+    { key: 'addSame', label: 'Save & Add Same', icon: <SaveAsIcon /> },
+    { key: 'saveScan', label: 'Save & Scan', icon: <DataSaverOnIcon /> },
+  ];
+  const [saveAction, setSaveAction] = useState('saveClose');
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+
+  // Save action handler
+  const handleSaveAction = async () => {
+    await handleSave();
+    switch (saveAction) {
+      case 'saveClose':
+        onClose();
+        break;
+      case 'addNext':
+        clearDialogFields();
+        // Keep dialog open, fields cleared
+        break;
+      case 'addSame':
+        // Keep dialog open, fields NOT cleared (allow adding same item again)
+        break;
+      case 'saveScan':
+        clearDialogFields();
+        setScanning(true); // Enter scan mode for next item
+        break;
+      default:
+        onClose();
+    }
+    if (onSaved) onSaved();
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchor(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+  const handleMenuSelect = (actionKey: string) => {
+    setSaveAction(actionKey);
+    setMenuAnchor(null);
+  };
   const { findProductGroupByName, addProductGroup } = useProductGroupActions();
   const { findProductByNameUnitQuantityBarcode, addProduct } = useProductActions();
   const { t } = useTranslation();
@@ -215,8 +257,8 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t(UI_TRANSLATION_KEYS.GROCERY_ADD_TITLE, 'Add Grocery Item')}</DialogTitle>
-      <DialogContent>
-        <Box display="flex" flexDirection="column" gap={2}>
+      <DialogContent sx={{ pb: 1 }}>
+        <Box display="flex" flexDirection="column" gap={1} mt={2}>
           <Autocomplete
             freeSolo
             options={productOptions}
@@ -237,6 +279,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
                 label={t(UI_TRANSLATION_KEYS.GROCERY_NAME, 'Name')}
                 fullWidth
                 autoFocus
+                required
               />
             )}
           />
@@ -245,7 +288,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               label={t(UI_TRANSLATION_KEYS.GROCERY_BARCODE, 'Barcode')}
               value={barcode}
               onChange={e => setBarcode(e.target.value)}
-              sx={{ maxWidth: 160 }}
+              sx={{ width: '100%' }}
             />
             {loading && barcode ? (
               <CircularProgress size={32} />
@@ -261,39 +304,43 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             onChange={e => handleManualFieldChange('productBrand', e.target.value)}
             fullWidth
           />
-          <TextField
-            select
-            label={t(UI_TRANSLATION_KEYS.GROCERY_UNIT, 'Unit')}
-            value={manualFields.unit}
-            onChange={e => handleManualFieldChange('unit', e.target.value)}
-            fullWidth
-          >
-            {UNIT_OPTIONS.map(opt => (
-              <MenuItem key={opt} value={opt}>{opt}</MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_QUANTITY, 'Quantity')}
-            value={manualFields.quantity}
-            onChange={e => handleManualFieldChange('quantity', e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_BUY_DATE, 'Buy Date')}
-            type="date"
-            value={manualFields.buyDate || new Date().toISOString().slice(0, 10)}
-            onChange={e => handleManualFieldChange('buyDate', e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
-          <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_EXPIRATION_DATE, 'Expiration Date (optional)')}
-            type="date"
-            value={manualFields.expirationDate}
-            onChange={e => handleManualFieldChange('expirationDate', e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
+          <Box display="flex" alignItems="center" gap={1}>
+            <TextField
+              label={t(UI_TRANSLATION_KEYS.GROCERY_QUANTITY, 'Quantity')}
+              value={manualFields.quantity}
+              onChange={e => handleManualFieldChange('quantity', e.target.value)}
+              fullWidth
+            />
+            <TextField
+              select
+              label={t(UI_TRANSLATION_KEYS.GROCERY_UNIT, 'Unit')}
+              value={manualFields.unit}
+              onChange={e => handleManualFieldChange('unit', e.target.value)}
+              sx={{ width: '20vw' }}
+            >
+              {UNIT_OPTIONS.map(opt => (
+                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+              ))}
+            </TextField>
+          </Box>
+          <Box display="flex" alignItems="center" gap={1}>
+            <TextField
+              label={t(UI_TRANSLATION_KEYS.GROCERY_BUY_DATE, 'Buy Date')}
+              type="date"
+              value={manualFields.buyDate || new Date().toISOString().slice(0, 10)}
+              onChange={e => handleManualFieldChange('buyDate', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <TextField
+              label={t(UI_TRANSLATION_KEYS.GROCERY_EXPIRATION_DATE, 'Expiration Date (optional)')}
+              type="date"
+              value={manualFields.expirationDate}
+              onChange={e => handleManualFieldChange('expirationDate', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+          </Box>
           <TextField
             label={t(UI_TRANSLATION_KEYS.GROCERY_NOTES, 'Notes')}
             value={manualFields.notes}
@@ -303,10 +350,43 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
         </Box>
       </DialogContent>
       <DialogActions>
-  <Button onClick={handleCancel} color="inherit">{t(UI_TRANSLATION_KEYS.COMMON_CANCEL, 'Cancel')}</Button>
-  <Button onClick={handleSave} variant="contained" color="primary" disabled={!name.trim()}>
-          {t(UI_TRANSLATION_KEYS.GROCERY_ADD, 'Add')}
-        </Button>
+        <IconButton onClick={handleCancel} size="small" color="inherit" aria-label="Cancel">
+          <CloseIcon />
+        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Fab
+            color="primary"
+            aria-label={SAVE_ACTIONS.find(a => a.key === saveAction)?.label}
+            onClick={handleSaveAction}
+            disabled={!name.trim() || !manualFields.unit.trim() || !manualFields.quantity.trim()}
+            size="small"
+          >
+            {SAVE_ACTIONS.find(a => a.key === saveAction)?.icon}
+          </Fab>
+          <IconButton
+            aria-label="Select Save Action"
+            onClick={handleMenuOpen}
+            size="small"
+          >
+            <ArrowDropDownIcon />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={handleMenuClose}
+          >
+            {SAVE_ACTIONS.map(action => (
+              <MenuItem
+                key={action.key}
+                selected={action.key === saveAction}
+                onClick={() => handleMenuSelect(action.key)}
+              >
+                {action.icon}
+                {action.label}
+              </MenuItem>
+            ))}
+          </Menu>
+        </Box>
       </DialogActions>
     </Dialog>
   );
