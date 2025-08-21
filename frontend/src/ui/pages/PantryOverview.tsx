@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Paper, TextField, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { useEffect } from 'react';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import AddContainerDialog from '../components/containers/ContainerNewEdit';
 import GroceryItemAddDialog from '../components/groceryItems/GroceryItemAddDialog';
-import Masonry from '@mui/lab/Masonry';
-import { useTranslation } from 'react-i18next';
-import { UI_TRANSLATION_KEYS } from '../../types/uiTranslationKeys';
-import { usePantryDebugData } from '../hooks/usePantryDebugData';
+import GroceryItemCard from '../components/groceryItems/GroceryItemCard';
+import Badge from '@mui/material/Badge';
+import { useRxDB } from '../../db/RxDBProvider';
+import { GroceryItemDocType } from '../../types/dbCollections';
 import { useContainers } from '../hooks/useContainers';
 
 const PantryOverview: React.FC = () => {
-  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [addContainerOpen, setAddContainerOpen] = useState(false);
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
 
-  // Container list from DB
   const containers = useContainers();
-  const { rows: pantryDebugRows } = usePantryDebugData();
+  const db = useRxDB();
+  const [groceryItems, setGroceryItems] = useState<GroceryItemDocType[]>([]);
+
+  useEffect(() => {
+    if (!db) return;
+    const sub = db.collections.grocery_item.find().$.subscribe(docs => {
+      setGroceryItems(docs.map(doc => doc.toJSON()));
+    });
+    return () => sub.unsubscribe();
+  }, [db]);
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center" pt={4} pb={4}>
@@ -64,27 +70,24 @@ const PantryOverview: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Debug table: GroceryItems, Products, ProductGroups */}
-      <TableContainer component={Paper} sx={{ mt: 4, maxWidth: 960 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Product Group Name</TableCell>
-              <TableCell>Product Name</TableCell>
-              <TableCell>GroceryItem ID</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {pantryDebugRows.map(row => (
-              <TableRow key={row.groceryItemId}>
-                <TableCell>{row.productGroupName}</TableCell>
-                <TableCell>{row.productName}</TableCell>
-                <TableCell>{row.groceryItemId}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* Grocery Items List View */}
+  <Box sx={{ width: '100%', maxWidth: '100%', mt: 4 }}>
+        <Typography variant="h6" mb={2}>Your Pantry Items</Typography>
+        {/* Group grocery items by product_id */}
+        {Object.entries(
+          groceryItems.reduce((acc, item) => {
+            if (!acc[item.product_id]) acc[item.product_id] = [];
+            acc[item.product_id].push(item);
+            return acc;
+          }, {} as Record<string, GroceryItemDocType[]>)
+        ).map(([productId, items]) => (
+          <Box key={productId} sx={{ width: '100%', mb: 2 }}>
+            <Badge badgeContent={items.length > 1 ? items.length : undefined} color="primary" sx={{ width: '100%' }}>
+              <GroceryItemCard groceryItems={items} />
+            </Badge>
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 };

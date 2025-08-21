@@ -7,18 +7,11 @@ export function useContainerSearch() {
   const [containers, setContainers] = useState<ContainerDocType[]>([]);
 
   useEffect(() => {
-    let cancelled = false;
-    async function fetchContainers() {
-      if (!db) return;
-      try {
-        const results = await db.collections.container.find().exec();
-        if (!cancelled) setContainers(results.map(doc => doc.toJSON()));
-      } catch (err) {
-        if (!cancelled) setContainers([]);
-      }
-    }
-    fetchContainers();
-    return () => { cancelled = true; };
+    if (!db) return;
+    const sub = db.collections.container.find().$.subscribe(docs => {
+      setContainers(docs.map(doc => doc.toJSON()));
+    });
+    return () => sub.unsubscribe();
   }, [db]);
 
   return { containers };
