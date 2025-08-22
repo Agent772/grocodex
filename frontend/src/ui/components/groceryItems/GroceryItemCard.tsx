@@ -1,4 +1,6 @@
 import React from 'react';
+import GroceryItemUseDialog from './GroceryItemUseDialog';
+import { useGroceryItemUse } from './useGroceryItemUse';
 import { Card, Box, Typography, Chip, Avatar, IconButton } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { GroceryItemDocType } from '../../../types/dbCollections';
@@ -14,6 +16,8 @@ export interface GroceryItemCardProps {
 
 
 const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
+  const [useDialogOpen, setUseDialogOpen] = React.useState(false);
+  const { useItem } = useGroceryItemUse(groceryItems);
   if (!groceryItems || groceryItems.length === 0) return null;
   const [expanded, setExpanded] = React.useState(false);
   const mainItem = groceryItems[0];
@@ -40,7 +44,11 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   const allSameLocation = groceryItems.every(item => item.container_id === mainItem.container_id);
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', p: 2, mb: 2, borderRadius: 2, boxShadow: 2, width: '100%' }}>
+    <>
+      <Card
+        sx={{ display: 'flex', flexDirection: 'column', p: 2, mb: 2, borderRadius: 2, boxShadow: 2, width: '100%', cursor: 'pointer' }}
+        onClick={() => setUseDialogOpen(true)}
+      >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Avatar src={product?.image_url} sx={{ mr: 2 }} />
         <Typography variant="h6" sx={{ flexGrow: 1 }}>{product?.name || 'Unknown Product'}</Typography>
@@ -60,7 +68,12 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
           ) : (
             <>
               {groceryItems.length > 1 && !allSameLocation && (
-                <IconButton size="small" onClick={() => setExpanded(e => !e)} aria-label="Show locations" sx={{ p: 0, mr: 1 }}>
+                <IconButton
+                  size="small"
+                  onClick={e => { e.stopPropagation(); setExpanded(exp => !exp); }}
+                  aria-label="Show locations"
+                  sx={{ p: 0, mr: 1 }}
+                >
                   {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </IconButton>
               )}
@@ -109,7 +122,17 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
           })}
         </Box>
       )}
-    </Card>
+      </Card>
+      <GroceryItemUseDialog
+        open={useDialogOpen}
+        onClose={() => setUseDialogOpen(false)}
+        groceryItems={groceryItems}
+        onSave={async (usedAmount) => {
+          await useItem(usedAmount);
+          setUseDialogOpen(false);
+        }}
+      />
+    </>
   );
 };
 
