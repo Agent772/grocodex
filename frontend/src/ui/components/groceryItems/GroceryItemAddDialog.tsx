@@ -335,7 +335,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               label={t(UI_TRANSLATION_KEYS.GROCERY_UNIT, 'Unit')}
               value={manualFields.unit}
               onChange={e => handleManualFieldChange('unit', e.target.value)}
-              sx={{ width: '20vw' }}
+              sx={{ width: { xs: '20vw', sm: '7vw' } }}
             >
               {UNIT_OPTIONS.map(opt => (
                 <MenuItem key={opt} value={opt}>{opt}</MenuItem>

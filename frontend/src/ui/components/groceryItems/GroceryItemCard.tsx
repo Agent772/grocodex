@@ -1,8 +1,10 @@
 import React from 'react';
 import GroceryItemUseDialog from './GroceryItemUseDialog';
+import GroceryItemEditDialog from './GroceryItemEditDialog';
 import { useGroceryItemUse } from './useGroceryItemUse';
 import { Card, Box, Typography, Chip, Avatar, IconButton } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import EditIcon from '@mui/icons-material/Edit';
 import { GroceryItemDocType } from '../../../types/dbCollections';
 import { useGroceryItemDetails } from '../../hooks/useGroceryItemDetails';
 import { useContainers } from '../../hooks/useContainers';
@@ -17,6 +19,8 @@ export interface GroceryItemCardProps {
 
 const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   const [useDialogOpen, setUseDialogOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState(false);
+  const [editItem, setEditItem] = React.useState<GroceryItemDocType | null>(null);
   const { useItem } = useGroceryItemUse(groceryItems);
   if (!groceryItems || groceryItems.length === 0) return null;
   const [expanded, setExpanded] = React.useState(false);
@@ -43,12 +47,33 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   // Check if all items share the same location
   const allSameLocation = groceryItems.every(item => item.container_id === mainItem.container_id);
 
+  const handleEditClick = (item: GroceryItemDocType) => {
+    setEditItem(item);
+    setEditOpen(true);
+  };
+  const handleEditClose = () => {
+    setEditOpen(false);
+    setEditItem(null);
+  };
+
   return (
     <>
       <Card
-        sx={{ display: 'flex', flexDirection: 'column', p: 2, mb: 2, borderRadius: 2, boxShadow: 2, width: '100%', cursor: 'pointer' }}
+        sx={{ position: 'relative', display: 'flex', flexDirection: 'column', p: 2, mb: 2, borderRadius: 2, boxShadow: 2, width: '100%', cursor: 'pointer' }}
         onClick={() => setUseDialogOpen(true)}
       >
+      {/* Edit button at top right */}
+      <IconButton
+        aria-label="Edit"
+        size="small"
+        sx={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
+        onClick={e => {
+          e.stopPropagation();
+          handleEditClick(Array.isArray(groceryItems) ? groceryItems[0] : groceryItems);
+        }}
+      >
+        <EditIcon />
+      </IconButton>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Avatar src={product?.image_url} sx={{ mr: 2 }} />
         <Typography variant="h6" sx={{ flexGrow: 1 }}>{product?.name || 'Unknown Product'}</Typography>
@@ -77,8 +102,12 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
                   {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </IconButton>
               )}
-              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.85rem' }}>
-                Expand to show locations
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ fontStyle: 'italic', fontSize: '0.85rem' }}  
+                onClick={e => { e.stopPropagation(); setExpanded(exp => !exp); }}>
+                    Expand to show locations
               </Typography>
             </>
           )}
@@ -103,20 +132,22 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
             // Sum product.quantity for this location
             const locProductQuantity = product?.quantity !== undefined ? locationGroups[locId].length * product.quantity : undefined;
             return (
-              <Box key={locId} sx={{ display: 'flex', alignItems: 'center', mb: 1, pl: 2 }}>
+              <Box key={locId} sx={{ display: 'flex', mb: 1}}>
+                <Chip label={`${locationGroups[locId].length}x`} size="small" color="primary" sx={{ mr: 1 }} />
                 <LocationOnIcon fontSize="small" sx={{ mr: 1, color: container?.ui_color }} />
                 {container ? (
                   <ContainerBreadcrumbLabel container={container} containerOptions={containerOptions} />
                 ) : (
                   <Typography variant="body2" color="text.secondary">Unknown Location</Typography>
                 )}
-                <Typography variant="body2" sx={{ ml: 2 }}>
-                  {locRestQuantity !== undefined && locProductQuantity !== undefined
-                    ? `${locRestQuantity}/${locProductQuantity}`
-                    : locRestQuantity ?? locProductQuantity ?? '?'}
-                </Typography>
-                <Chip label={product?.unit || ''} size="small" sx={{ ml: 1 }} />
-                <Chip label={`${locationGroups[locId].length}x`} size="small" color="primary" sx={{ ml: 1 }} />
+                <Box sx={{display: 'flex', alignItems: 'center', ml: 'auto'}}>
+                    <Typography variant="body2" sx={{ ml: 2 }}>
+                    {locRestQuantity !== undefined && locProductQuantity !== undefined
+                        ? `${locRestQuantity}/${locProductQuantity}`
+                        : locRestQuantity ?? locProductQuantity ?? '?'}
+                    </Typography>
+                    <Chip label={product?.unit || ''} size="small" sx={{ ml: 1 }} />
+                </Box>
               </Box>
             );
           })}
@@ -132,6 +163,13 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
           setUseDialogOpen(false);
         }}
       />
+      {editItem && (
+        <GroceryItemEditDialog
+          open={editOpen}
+          groceryItem={editItem}
+          onClose={handleEditClose}
+        />
+      )}
     </>
   );
 };

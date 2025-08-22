@@ -9,7 +9,14 @@ export function useGroceryItemActions() {
     await db.collections.grocery_item.insert(item);
   }
 
+  async function updateGroceryItem(id: string, updatedFields: Partial<GroceryItemDocType>) {
+    if (!db) throw new Error('RxDB not initialized');
+    const doc = await db.collections.grocery_item.findOne(id).exec();
+    if (!doc) throw new Error('Grocery item not found');
+    await doc.patch(updatedFields);
+  }
+
   // Add more actions as needed (update, delete, etc.)
 
-  return { addGroceryItem };
+  return { addGroceryItem, updateGroceryItem };
 }
