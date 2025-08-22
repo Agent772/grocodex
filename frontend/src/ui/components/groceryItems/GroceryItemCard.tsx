@@ -31,32 +31,50 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   // Helper to get container object
   const getContainer = (id: string) => containerOptions.find(c => c.id === id);
 
+  // Sum rest_quantity and product.quantity for all items
+  const totalRestQuantity = groceryItems.reduce((sum, item) => sum + (item.rest_quantity ?? 0), 0);
+  // If product.quantity is defined, multiply by number of items
+  const totalProductQuantity = product?.quantity !== undefined ? groceryItems.length * product.quantity : undefined;
+
+  // Check if all items share the same location
+  const allSameLocation = groceryItems.every(item => item.container_id === mainItem.container_id);
+
   return (
-  <Card sx={{ display: 'flex', flexDirection: 'column', p: 2, mb: 2, borderRadius: 2, boxShadow: 2, width: '100%' }}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', p: 2, mb: 2, borderRadius: 2, boxShadow: 2, width: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Avatar src={product?.image_url} sx={{ mr: 2 }} />
         <Typography variant="h6" sx={{ flexGrow: 1 }}>{product?.name || 'Unknown Product'}</Typography>
-        {groceryItems.length > 1 && (
-          <IconButton size="small" onClick={() => setExpanded(e => !e)} aria-label="Show locations">
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </IconButton>
-        )}
       </Box>
-      {/* Summary row: show first location and quantity, badge if multiple */}
+      {/* Summary row: show location only if all items share it, else show hint */}
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <LocationOnIcon fontSize="small" sx={{ mr: 1, color: getContainer(mainItem.container_id)?.ui_color }} />
-          {getContainer(mainItem.container_id) && containerOptions.length > 0 ? (
-            <ContainerBreadcrumbLabel container={getContainer(mainItem.container_id)!} containerOptions={containerOptions} />
+          {allSameLocation ? (
+            <>
+              <LocationOnIcon fontSize="small" sx={{ mr: 1, color: getContainer(mainItem.container_id)?.ui_color }} />
+              {getContainer(mainItem.container_id) && containerOptions.length > 0 ? (
+                <ContainerBreadcrumbLabel container={getContainer(mainItem.container_id)!} containerOptions={containerOptions} />
+              ) : (
+                <Typography variant="body2" color="text.secondary">Unknown Location</Typography>
+              )}
+            </>
           ) : (
-            <Typography variant="body2" color="text.secondary">Unknown Location</Typography>
+            <>
+              {groceryItems.length > 1 && !allSameLocation && (
+                <IconButton size="small" onClick={() => setExpanded(e => !e)} aria-label="Show locations" sx={{ p: 0, mr: 1 }}>
+                  {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              )}
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.85rem' }}>
+                Expand to show locations
+              </Typography>
+            </>
           )}
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Typography variant="body1" sx={{ mr: 1 }}>
-            {mainItem.rest_quantity !== undefined && product?.quantity !== undefined
-              ? `${mainItem.rest_quantity}/${product.quantity}`
-              : mainItem.rest_quantity ?? product?.quantity ?? '?'}
+            {totalRestQuantity !== undefined && totalProductQuantity !== undefined
+              ? `${totalRestQuantity}/${totalProductQuantity}`
+              : totalRestQuantity ?? totalProductQuantity ?? '?'}
           </Typography>
           <Chip label={product?.unit || ''} size="small" />
         </Box>
@@ -67,6 +85,10 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
           <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Locations:</Typography>
           {locationIds.map(locId => {
             const container = getContainer(locId);
+            // Sum rest_quantity for this location
+            const locRestQuantity = locationGroups[locId].reduce((sum, item) => sum + (item.rest_quantity ?? 0), 0);
+            // Sum product.quantity for this location
+            const locProductQuantity = product?.quantity !== undefined ? locationGroups[locId].length * product.quantity : undefined;
             return (
               <Box key={locId} sx={{ display: 'flex', alignItems: 'center', mb: 1, pl: 2 }}>
                 <LocationOnIcon fontSize="small" sx={{ mr: 1, color: container?.ui_color }} />
@@ -76,11 +98,9 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
                   <Typography variant="body2" color="text.secondary">Unknown Location</Typography>
                 )}
                 <Typography variant="body2" sx={{ ml: 2 }}>
-                  {locationGroups[locId].map(item =>
-                    item.rest_quantity !== undefined && product?.quantity !== undefined
-                      ? `${item.rest_quantity}/${product.quantity}`
-                      : item.rest_quantity ?? product?.quantity ?? '?'
-                  ).join(', ')}
+                  {locRestQuantity !== undefined && locProductQuantity !== undefined
+                    ? `${locRestQuantity}/${locProductQuantity}`
+                    : locRestQuantity ?? locProductQuantity ?? '?'}
                 </Typography>
                 <Chip label={product?.unit || ''} size="small" sx={{ ml: 1 }} />
                 <Chip label={`${locationGroups[locId].length}x`} size="small" color="primary" sx={{ ml: 1 }} />
