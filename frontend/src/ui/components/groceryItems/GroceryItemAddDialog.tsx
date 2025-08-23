@@ -30,12 +30,13 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   // Container autocomplete state
   const [container, setContainer] = useState<ContainerDocType | null>(null);
   const { containers: containerOptions } = useContainerSearch();
+  const { t } = useTranslation();
   // Save actions
   const SAVE_ACTIONS = [
-    { key: 'saveClose', label: 'Save & Close', icon: <SaveIcon /> },
-    { key: 'addNext', label: 'Save & Add Next', icon: <LibraryAddIcon /> },
-    { key: 'addSame', label: 'Save & Add Same', icon: <SaveAsIcon /> },
-    { key: 'saveScan', label: 'Save & Scan', icon: <DataSaverOnIcon /> },
+    { key: 'saveClose', label: t('grocery.add.save_close', 'Save & Close'), icon: <SaveIcon /> },
+    { key: 'addNext', label: t('grocery.add.save_add_next', 'Save & Add Next'), icon: <LibraryAddIcon /> },
+    { key: 'addSame', label: t('grocery.add.save_add_same', 'Save & Add Same'), icon: <SaveAsIcon /> },
+    { key: 'saveScan', label: t('grocery.add.save_scan', 'Save & Scan'), icon: <DataSaverOnIcon /> },
   ];
   const [saveAction, setSaveAction] = useState('saveClose');
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -76,9 +77,8 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   };
   const { findProductGroupByName, addProductGroup } = useProductGroupActions();
   const { findProductByNameUnitQuantityBarcode, addProduct } = useProductActions();
-  const { t } = useTranslation();
   const [name, setName] = useState('');
-  const [manualFields, setManualFields] = useState({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
+  const [manualFields, setManualFields] = useState({ productBrand: '', unit: 'g', quantity: '', buyDate: '', expirationDate: '', notes: '' });
   const [barcode, setBarcode] = useState('');
   const [scanning, setScanning] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -102,7 +102,6 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
 
   // Fill all fields from a DB product or API result object
   const fillAllFieldsFromProduct = async (product: any, dbInstance: any) => {
-    console.log('[fillAllFieldsFromProduct] product:', product);
     setName(product.name || product.product_name || product.title || '');
     setBarcode(product.barcode || '');
     let unit = product.unit || product.unit_name || product.quantity_unit || product.product_quantity_unit || '';
@@ -133,12 +132,9 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
 
     // Prefill container if a grocery item exists for this product
     if (product.id && dbInstance) {
-      console.log('[fillAllFieldsFromProduct] looking for grocery item with product_id:', product.id);
       const groceryItem = await findGroceryItemByProductId(dbInstance, product.id);
-      console.log('[fillAllFieldsFromProduct] found groceryItem:', groceryItem);
       if (groceryItem && groceryItem.container_id) {
         const foundContainer = containerOptions.find(c => c.id === groceryItem.container_id);
-        console.log('[fillAllFieldsFromProduct] foundContainer:', foundContainer);
         if (foundContainer) setContainer(foundContainer);
       }
     }
@@ -166,13 +162,18 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   }, [barcode, containerOptions, db]);
 
   const handleManualFieldChange = (field: string, value: string) => {
-    setManualFields(prev => ({ ...prev, [field]: value }));
+    if (field === 'unit') {
+      // Prevent empty unit, fallback to 'g'
+      setManualFields(prev => ({ ...prev, unit: value && value.trim() ? value : 'g' }));
+    } else {
+      setManualFields(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const clearDialogFields = () => {
     setName('');
     setBarcode('');
-    setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
+    setManualFields({ productBrand: '', unit: 'g', quantity: '', buyDate: '', expirationDate: '', notes: '' });
     setContainer(null);
   };
 
@@ -266,7 +267,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     if (!open) {
       setName('');
       setBarcode('');
-      setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
+      setManualFields({ productBrand: '', unit: 'g', quantity: '', buyDate: '', expirationDate: '', notes: '' });
       setContainer(null);
       setLastSearchedBarcode('');
     }
@@ -275,7 +276,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   // --- All hooks and logic above ---
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t(UI_TRANSLATION_KEYS.GROCERY_ADD_TITLE, 'Add Grocery Item')}</DialogTitle>
+      <DialogTitle>{t('grocery.add.title', 'Add Grocery Item')}</DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={1} mt={2}>
           <Autocomplete
@@ -295,7 +296,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             renderInput={params => (
               <TextField
                 {...params}
-                label={t(UI_TRANSLATION_KEYS.GROCERY_NAME, 'Name')}
+                label={t('grocery.add.product_name', 'Name')}
                 fullWidth
                 autoFocus
                 required
@@ -304,7 +305,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
           />
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_BARCODE, 'Barcode')}
+              label={t('product.barcode', 'Barcode')}
               value={barcode}
               onChange={e => setBarcode(e.target.value)}
               sx={{ width: '100%' }}
@@ -318,21 +319,21 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             )}
           </Box>
           <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_BRAND, 'Brand')}
+            label={t('product.brand', 'Brand')}
             value={manualFields.productBrand}
             onChange={e => handleManualFieldChange('productBrand', e.target.value)}
             fullWidth
           />
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_QUANTITY, 'Quantity')}
+              label={t('product.quantity', 'Quantity')}
               value={manualFields.quantity}
               onChange={e => handleManualFieldChange('quantity', e.target.value)}
               fullWidth
             />
             <TextField
               select
-              label={t(UI_TRANSLATION_KEYS.GROCERY_UNIT, 'Unit')}
+              label={t('product.unit', 'Unit')}
               value={manualFields.unit}
               onChange={e => handleManualFieldChange('unit', e.target.value)}
               sx={{ width: { xs: '20vw', sm: '7vw' } }}
@@ -344,7 +345,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_BUY_DATE, 'Buy Date')}
+              label={t('grocery.buy_date', 'Buy Date')}
               type="date"
               value={manualFields.buyDate || new Date().toISOString().slice(0, 10)}
               onChange={e => handleManualFieldChange('buyDate', e.target.value)}
@@ -352,7 +353,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               fullWidth
             />
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_EXPIRATION_DATE, 'Expiration Date (optional)')}
+              label={t('grocery.expiration_date', 'Expiration Date')}
               type="date"
               value={manualFields.expirationDate}
               onChange={e => handleManualFieldChange('expirationDate', e.target.value)}
@@ -361,7 +362,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             />
           </Box>
           <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_NOTES, 'Notes')}
+            label={t('grocery.notes', 'Notes')}
             value={manualFields.notes}
             onChange={e => handleManualFieldChange('notes', e.target.value)}
             fullWidth
@@ -380,7 +381,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             renderInput={params => (
               <TextField
                 {...params}
-                label={t(UI_TRANSLATION_KEYS.GROCERY_CONTAINER, 'Container / Location')}
+                label={t('grocery.add.container', 'Container / Location')}
                 fullWidth
               />
             )}
@@ -404,7 +405,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             {SAVE_ACTIONS.find(a => a.key === saveAction)?.icon}
           </Fab>
           <IconButton
-            aria-label="Select Save Action"
+            aria-label={t('grocery.add.save_action', 'Select Save Action')}
             onClick={handleMenuOpen}
             size="small"
           >

@@ -1,21 +1,17 @@
 {
-  "container": {
-    "add": "Add Container"
+  "groceryItem": {
+    "UseDialog": {
+      "amountUsed": "Amount Used",
+      "available": "Available",
+      "cancel": "Cancel",
+      "save": "Save",
+      "title": "Use Item",
+      "useAll": "All"
+    }
   },
-  "grocery": {
-    "add": "Add Grocery Item"
-  },
-  "loading": {
-    "dbReady": "",
-    "initDb": "",
-    "initError": "",
-    "loadingUI": "",
-    "offline": "",
-    "synced": "",
-    "syncError": "",
-    "syncing": ""
-  },
-  "pantry": {
-    "search": "Search by name or brand"
+  "product": {
+    "unit": {
+      "pcs": "pcs"
+    }
   }
 }
