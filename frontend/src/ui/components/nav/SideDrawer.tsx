@@ -6,12 +6,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import KitchenIcon from '@mui/icons-material/Kitchen';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ShelvesIcon from '@mui/icons-material/Shelves';
 
 export interface SideDrawerProps {
   open: boolean;
@@ -22,9 +22,10 @@ export interface SideDrawerProps {
 }
 
 const navItems = [
-  { key: UI_TRANSLATION_KEYS.NAV_SHOPPING_LISTS, icon: <ListAltIcon /> },
-  { key: UI_TRANSLATION_KEYS.NAV_COOKIEDOO_IMPORT, icon: <ImportExportIcon /> },
-  { key: UI_TRANSLATION_KEYS.NAV_PANTRY_OVERVIEW, icon: <KitchenIcon /> },
+  { key: 'nav.shopping_lists', icon: <ListAltIcon /> },
+  { key: 'nav.cookiedoo_import', icon: <ImportExportIcon /> },
+  { key: 'nav.pantry_overview', icon: <KitchenIcon /> },
+  { key: 'nav.containers', icon: <ShelvesIcon /> },
 ];
 
 /**
@@ -57,9 +58,9 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ open, onClose, onSelect,
       >
         <List>
           {navItems.map((item, idx) => (
-            <ListItem button key={item.key} selected={selectedIndex === idx} onClick={() => onSelect(idx)} sx={{ justifyContent: 'center', px: 0 }}>
+            <ListItemButton key={item.key} selected={selectedIndex === idx} onClick={() => onSelect(idx)} sx={{ justifyContent: 'center', px: 0 }}>
               <ListItemIcon sx={{ minWidth: 0 }}>{item.icon}</ListItemIcon>
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
       </Drawer>
@@ -71,10 +72,10 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ open, onClose, onSelect,
       <Box role="presentation">
         <List>
           {navItems.map((item, idx) => (
-            <ListItem button key={item.key} selected={selectedIndex === idx} onClick={() => onSelect(idx)}>
+            <ListItemButton key={item.key} selected={selectedIndex === idx} onClick={() => onSelect(idx)}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={t(item.key)} />
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
       </Box>

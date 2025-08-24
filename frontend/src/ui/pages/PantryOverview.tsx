@@ -16,6 +16,8 @@ import Masonry from '@mui/lab/Masonry';
 
 const PantryOverview: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [productGroups, setProductGroups] = useState<Record<string, string>>({});
+  const [products, setProducts] = useState<Record<string, string>>({});
   const [addContainerOpen, setAddContainerOpen] = useState(false);
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
 
@@ -28,6 +30,14 @@ const PantryOverview: React.FC = () => {
     const sub = db.collections.grocery_item.find().$.subscribe(docs => {
       setGroceryItems(docs.map(doc => doc.toJSON()));
     });
+    // fetch product groups and products for search
+    const fetchMeta = async () => {
+      const pgDocs = await db.collections.product_group.find().exec();
+      const pDocs = await db.collections.product.find().exec();
+      setProductGroups(Object.fromEntries(pgDocs.map((doc: any) => [doc.id, doc.name])));
+      setProducts(Object.fromEntries(pDocs.map((doc: any) => [doc.id, doc.name])));
+    };
+    fetchMeta();
     return () => sub.unsubscribe();
   }, [db]);
 
@@ -47,7 +57,6 @@ const PantryOverview: React.FC = () => {
         sx={{
           width: '100%',
           maxWidth: { xs: '100%', md: 900 },
-          //mt: { xs: 2, sm: 4 },
           flex: 1,
           overflow: 'auto',
           pb: 8,
@@ -57,7 +66,16 @@ const PantryOverview: React.FC = () => {
           backgroundColor: { xs: 'transparent', md: 'background.paper' },
         }}
       >
-        {/* Group grocery items by product_id */}
+        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+          <TextField
+            fullWidth
+            label="Search pantry items"
+            variant="outlined"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            size="small"
+          />
+        </Box>
         <Box display={'flex'} justifyContent={'center'} sx={{ paddingTop: 2 }}>
           <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{width: '95%', px: 2}}>
             {Object.entries(
@@ -66,7 +84,15 @@ const PantryOverview: React.FC = () => {
                 acc[item.product_id].push(item);
                 return acc;
               }, {} as Record<string, GroceryItemDocType[]>)
-            ).map(([productId, items]) => (
+            )
+            .filter(([productId, items]) => {
+              if (!search.trim()) return true;
+              const productName = products[productId]?.toLowerCase() || '';
+              //const productGroupName = items[0]?.product_group_id ? (productGroups[items[0].product_group_id]?.toLowerCase() || '') : '';
+              const s = search.toLowerCase();
+              return productName.includes(s);
+            })
+            .map(([productId, items]) => (
                 <Badge badgeContent={items.length > 1 ? items.length : undefined} color="primary" sx={{ width: '100%' }}>
                   <GroceryItemCard groceryItems={items} />
                 </Badge>

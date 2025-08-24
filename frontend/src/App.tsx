@@ -30,6 +30,9 @@ function AppContent() {
     case 2:
       content = <PantryOverview />;
       break;
+    case 3:
+      content = <Typography variant="h5" align="center">Containers (Coming soon)</Typography>;
+      break;
     default:
       content = null;
   }
