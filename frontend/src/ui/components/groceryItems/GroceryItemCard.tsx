@@ -59,7 +59,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   return (
     <>
       <Card
-        sx={{ position: 'relative', display: 'flex', flexDirection: 'column', p: 2, mb: 2, borderRadius: 2, boxShadow: 2, width: '100%', cursor: 'pointer' }}
+        sx={{ position: 'relative', display: 'flex', flexDirection: 'column', p: 2, borderRadius: 2, boxShadow: 2, width: '100%', cursor: 'pointer' }}
         onClick={() => setUseDialogOpen(true)}
       >
       {/* Edit button at top right */}
