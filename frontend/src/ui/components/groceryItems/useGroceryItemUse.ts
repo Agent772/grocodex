@@ -1,5 +1,5 @@
 import { GroceryItemDocType } from '../../../types/dbCollections';
-import { useRxDB } from '../../../db/RxDBProvider';
+import { useRxDB } from 'rxdb-hooks';
 
 export function useGroceryItemUse(groceryItems: GroceryItemDocType[]) {
   const db = useRxDB();

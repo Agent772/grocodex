@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
 import { useContainerActions } from '../../hooks/useContainerActions';
 import { ContainerDocType } from '../../../types/dbCollections';
+import { getContainerBreadcrumbLabel } from './ContainerBreadcrumbLabel';
 
 export interface AddContainerDialogProps {
   open: boolean;
@@ -38,24 +39,24 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { addOrUpdateContainer } = useContainerActions();
 
-  // Helper to build breadcrumb label for a container
-  const getBreadcrumbLabel = (option: ContainerDocType): string => {
-    // Find parent recursively (assumes containerOptions includes all containers)
-    let label = option.name;
-    let current = option as ContainerDocType;
-    const visited = new Set();
-    while (current.parent_container_id && !visited.has(current.parent_container_id)) {
-      visited.add(current.parent_container_id);
-      const parentObj = containerOptions.find(c => c.id === current.parent_container_id);
-      if (parentObj) {
-        label = parentObj.name + ' > ' + label;
-        current = parentObj;
-      } else {
-        break;
-      }
-    }
-    return label;
-  };
+  // // Helper to build breadcrumb label for a container
+  // const getBreadcrumbLabel = (option: ContainerDocType): string => {
+  //   // Find parent recursively (assumes containerOptions includes all containers)
+  //   let label = option.name;
+  //   let current = option as ContainerDocType;
+  //   const visited = new Set();
+  //   while (current.parent_container_id && !visited.has(current.parent_container_id)) {
+  //     visited.add(current.parent_container_id);
+  //     const parentObj = containerOptions.find(c => c.id === current.parent_container_id);
+  //     if (parentObj) {
+  //       label = parentObj.name + ' > ' + label;
+  //       current = parentObj;
+  //     } else {
+  //       break;
+  //     }
+  //   }
+  //   return label;
+  // };
 
   React.useEffect(() => {
     setName(container?.name || '');
@@ -139,10 +140,10 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
       <Box sx={{ flex: 1 }}>
         <DialogTitle>
           {container
-            ? t(UI_TRANSLATION_KEYS.CONTAINER_EDIT_TITLE, 'Edit Container')
+            ? t('container.edit.title', 'Edit Container')
             : parentContainer
-            ? t(UI_TRANSLATION_KEYS.CONTAINER_ADD_SUB_TITLE, 'Add Sub-Container')
-            : t(UI_TRANSLATION_KEYS.CONTAINER_ADD_TITLE, 'Add New Container')}
+            ? t('container.add.subTitle', 'Add Sub-Container')
+            : t('container.add.title', 'Add New Container')}
         </DialogTitle>
         <DialogContent>
           {/* Top row: Color picker and parent container selector */}
@@ -152,17 +153,17 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
               value={color}
               onChange={event => setColor(event.target.value)}
               style={{ width: 40, height: 40, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
-              title="Container Color"
+              title={t('container.uiColor', 'Container UI Color')}
             />
             <Autocomplete
               options={containerOptions}
-              getOptionLabel={getBreadcrumbLabel}
+              getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions)}
               value={parent}
               onChange={(_, value) => setParent(value)}
               renderInput={params => (
                 <TextField
                   {...params}
-                  label={t(UI_TRANSLATION_KEYS.CONTAINER_PARENT, 'Parent Container')}
+                  label={t('container.parent', 'Parent Container')}
                   variant="standard"
                   sx={{ minWidth: isMobile ? undefined : 120, width: isMobile ? '100%' : '100%' }}
                 />
@@ -171,7 +172,7 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
               fullWidth={isMobile}
               disableClearable={false}
               filterOptions={(options, state) =>
-                options.filter(opt => getBreadcrumbLabel(opt).toLowerCase().includes(state.inputValue.toLowerCase()))
+                options.filter(opt => getContainerBreadcrumbLabel(opt, containerOptions).toLowerCase().includes(state.inputValue.toLowerCase()))
               }
               sx={{ minWidth: isMobile ? undefined : 180, width: isMobile ? '100%' : '100%', mb: 2 }}
             />
@@ -180,7 +181,7 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
           <Box mb={2} display="flex" alignItems="center" gap={2}>
             <TextField
               autoFocus
-              label={t(UI_TRANSLATION_KEYS.CONTAINER_NAME, 'Container Name')}
+              label={t('container.name', 'Container Name')}
               value={name}
               onChange={e => setName(e.target.value)}
               variant="standard"
@@ -190,12 +191,12 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
             {/* Image upload buttons or preview */}
             {!imagePreview ? (
               <Box display="flex" gap={1}>
-                <Tooltip title={t(UI_TRANSLATION_KEYS.UPLOAD_IMAGE, 'Upload Image')}>
+                <Tooltip title={t('container.tooltip.uploadImage', 'Upload Image')}>
                   <IconButton color="secondary" component="span" onClick={() => fileInputRef.current?.click()}>
                     <FileUploadIcon/>
                   </IconButton>
                 </Tooltip>
-                <Tooltip title={t(UI_TRANSLATION_KEYS.TAKE_PHOTO, 'Take Photo')}>
+                <Tooltip title={t('container.tooltip.takePhoto', 'Take Photo')}>
                   <IconButton color="secondary" component="span" onClick={() => cameraInputRef.current?.click()}>
                     <PhotoCameraIcon/>
                   </IconButton>
@@ -227,8 +228,8 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
                     size="small"
                     color="error"
                     onClick={handleDeleteImage}
-                    sx={{ position: 'absolute', top: 4, right: 4, background: 'rgba(255,255,255,0.7)', zIndex: 2 }}
-                    aria-label={t(UI_TRANSLATION_KEYS.CONTAINER_DELETE_IMAGE, 'Delete Image')}
+                    sx={{ position: 'absolute', top: 4, right: 4, background: theme.palette.background.paper, zIndex: 2 }}
+                    aria-label={t('aria.deleteImage', 'Delete Image')}
                   >
                     <DeleteIcon/>
                   </IconButton>
@@ -238,9 +239,9 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color='inherit'>{t(UI_TRANSLATION_KEYS.COMMON_CANCEL, 'Cancel')}</Button>
+          <Button onClick={onClose} color='inherit'>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary" disabled={!name.trim()}>
-            {container ? t(UI_TRANSLATION_KEYS.CONTAINER_SAVE, 'Save') : t(UI_TRANSLATION_KEYS.CONTAINER_ADD, 'Add')}
+            {container ? t('common.save', 'Save') : t('common.add', 'Add')}
           </Button>
         </DialogActions>
       </Box>

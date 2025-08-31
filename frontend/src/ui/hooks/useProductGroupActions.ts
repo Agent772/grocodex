@@ -1,4 +1,4 @@
-import { useRxDB } from '../../db/RxDBProvider';
+import { useRxDB } from 'rxdb-hooks';
 import { ProductGroupDocType } from '../../types/dbCollections';
 
 export function useProductGroupActions() {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRxDB } from '../../../db/RxDBProvider';
+import { useRxDB } from 'rxdb-hooks';
 import { Fab, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, MenuItem, IconButton, Autocomplete } from '@mui/material';
 import { ContainerBreadcrumbLabel, getContainerBreadcrumbLabel } from '../containers/ContainerBreadcrumbLabel';
 import { useContainerSearch } from '../../hooks/useContainerSearch';
@@ -10,6 +10,7 @@ import { UNIT_OPTIONS } from '../../../types/unitOptions';
 import { useGroceryItemActions } from '../../hooks/useGroceryItemActions';
 import { GroceryItemDocType, ContainerDocType } from '../../../types/dbCollections';
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
+import {getUnitLabel} from '../../utils/getUnitLabel'
 
 interface GroceryItemEditDialogProps {
   open: boolean;
@@ -82,40 +83,45 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t(UI_TRANSLATION_KEYS.GROCERY_ADD_TITLE, 'Edit Grocery Item')}</DialogTitle>
+      <DialogTitle>{t('groceryItem.EditDialog.title', 'Edit Grocery Item')}</DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={1} mt={2}>
           <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_NAME, 'Name')}
+            label={t('groceryItem.name', 'Name')}
             value={name}
             fullWidth
             autoFocus
             disabled
           />
           <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_BARCODE, 'Barcode')}
+            label={t('product.barcode', 'Barcode')}
             value={barcode}
             fullWidth
             disabled
           />
           <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_BRAND, 'Brand')}
+            label={t('product.brand', 'Brand')}
             value={manualFields.productBrand}
             fullWidth
             disabled
           />
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_REMAINING_QTY ?? 'Remaining Quantity')}
+              label={t('groceryItem.remainingQuantity', 'Remaining Quantity')}
               value={manualFields.quantity}
               onChange={e => handleManualFieldChange('quantity', e.target.value)}
               fullWidth
+              required
               type="number"
-              inputProps={{ min: 0 }}
+              slotProps={{
+                htmlInput: {
+                  min: 0,
+                },
+              }}
               sx={{ width: { xs: '60vw', sm: '60vw' } }}
             />
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_QUANTITY, 'Quantity')}
+              label={t('groceryItem.quantity', 'Quantity')}
               value={groceryItem.rest_quantity ? groceryItem.rest_quantity : ''}
               fullWidth
               disabled
@@ -123,36 +129,46 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
             />
             <TextField
               select
-              label={t(UI_TRANSLATION_KEYS.GROCERY_UNIT, 'Unit')}
+              label={t('product.unit', 'Unit')}
               value={manualFields.unit}
               sx={{ width: { xs: '25vw', sm: '10vw' } }}
               disabled
             >
               {UNIT_OPTIONS.map(opt => (
-                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                <MenuItem key={opt} value={opt}>
+                  {getUnitLabel(opt, t)}
+                </MenuItem>
               ))}
             </TextField>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_BUY_DATE, 'Buy Date')}
+              label={t('groceryItem.buyDate', 'Buy Date')}
               type="date"
               value={manualFields.buyDate || new Date().toISOString().slice(0, 10)}
               onChange={e => handleManualFieldChange('buyDate', e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              slotProps= {{
+                inputLabel: {
+                  shrink: true,
+                }
+              }}
               fullWidth
             />
             <TextField
-              label={t(UI_TRANSLATION_KEYS.GROCERY_EXPIRATION_DATE, 'Expiration Date (optional)')}
+              label={t('groceryItem.expirationDate', 'Expiration Date')}
               type="date"
               value={manualFields.expirationDate}
               onChange={e => handleManualFieldChange('expirationDate', e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              slotProps= {{
+                inputLabel: {
+                  shrink: true,
+                }
+              }}
               fullWidth
             />
           </Box>
           <TextField
-            label={t(UI_TRANSLATION_KEYS.GROCERY_NOTES, 'Notes')}
+            label={t('groceryItem.notes', 'Notes')}
             value={manualFields.notes}
             onChange={e => handleManualFieldChange('notes', e.target.value)}
             fullWidth
@@ -160,7 +176,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
           {/* Container autocomplete field */}
           <Autocomplete
             options={containerOptions}
-            getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions)}
+            getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions, t)}
             value={container}
             onChange={(_, value) => setContainer(value)}
             renderOption={(props, option) => (
@@ -171,7 +187,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
             renderInput={params => (
               <TextField
                 {...params}
-                label={t(UI_TRANSLATION_KEYS.GROCERY_CONTAINER, 'Container / Location')}
+                label={t('groceryItem.container', 'Container / Location')}
                 fullWidth
               />
             )}
@@ -181,12 +197,12 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
         </Box>
       </DialogContent>
       <DialogActions>
-        <IconButton onClick={handleCancel} size="small" color="inherit" aria-label="Cancel">
+        <IconButton onClick={handleCancel} size="small" color="inherit" aria-label={t('aria.cancel', 'Cancel')}>
           <CloseIcon />
         </IconButton>
         <Fab
           color="primary"
-          aria-label={t(UI_TRANSLATION_KEYS.GROCERY_ADD_TITLE, 'Edit Grocery Item')}
+          aria-label={t('aria.save', 'Save')}
           onClick={handleSave}
           size="small"
         >

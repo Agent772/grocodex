@@ -5,7 +5,6 @@ import Box from '@mui/material/Box';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Brightness2Icon from '@mui/icons-material/Brightness2';
 import { useTranslation } from 'react-i18next';
-import { UI_TRANSLATION_KEYS } from '../../types/uiTranslationKeys';
 
 interface ThemeToggleProps {
   mode: 'light' | 'dark';
@@ -69,7 +68,11 @@ export function ThemeToggle({ mode, onToggle }: ThemeToggleProps) {
       <CustomSwitch
         defaultChecked={mode === 'dark'}
         onChange={onToggle}
-        inputProps={{ 'aria-label': t(UI_TRANSLATION_KEYS.THEME_TOGGLE, 'Toggle dark and light mode') }}
+        slotProps={{
+          input: {
+            'aria-label': t('aria.themeToggle', 'Toggle dark and light mode'),
+          },
+        }}
       />
       <MoonIcon mode={mode} sx={{ opacity: mode === 'dark' ? 1 : 0.5 }} />
     </Box>

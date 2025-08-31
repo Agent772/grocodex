@@ -32,18 +32,18 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t('groceryItem.UseDialog.title', 'Use Item')}</DialogTitle>
+      <DialogTitle>{t('groceryItem.Use.title', 'Use Item')}</DialogTitle>
       <DialogContent sx={{ minWidth: 300 }}>
         <Typography gutterBottom>
-          {t('groceryItem.UseDialog.available', 'Available')}: {totalRestQuantity}
+          {t('groceryItem.Use.available', 'Available')}: {totalRestQuantity}
         </Typography>
             <Box display={'flex'} alignItems={'center'} alignContent={'center'}>
               <FormControl fullWidth variant="outlined" sx={{ mt: 1 }}>
-                <InputLabel htmlFor="outlined-adornment-amount">{t('groceryItem.UseDialog.amountUsed', 'Amount Used')}</InputLabel>
+                <InputLabel htmlFor="outlined-adornment-amount">{t('groceryItem.Use.amountUsed', 'Amount Used')}</InputLabel>
                 <OutlinedInput
                   id="outlined-adornment-amount"
                   type="number"
-                  label={t('groceryItem.UseDialog.amountUsed', 'Amount Used')}
+                  label={t('groceryItem.Use.amountUsed', 'Amount Used')}
                   value={usedAmount}
                   onChange={e => setUsedAmount(Number(e.target.value))}
                   endAdornment={<InputAdornment position="end">{product?.unit || ''}</InputAdornment>}
@@ -51,7 +51,7 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
                     min: 0,
                     max: totalRestQuantity,
                     style: { textAlign: 'right' },
-                    'aria-label': 'amount',
+                    'aria-label': t('aria.amountUsed', 'Amount Used'),
                   }}
                   required
                 />
@@ -69,9 +69,9 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
             </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCancel}>{t('groceryItem.UseDialog.cancel', 'Cancel')}</Button>
+        <Button onClick={handleCancel}>{t('common.cancel', 'Cancel')}</Button>
         <Button onClick={handleSave} variant="contained" color="primary" disabled={usedAmount <= 0 || usedAmount > totalRestQuantity}>
-          {t('groceryItem.UseDialog.save', 'Save')}
+          {t('common.save', 'Save')}
         </Button>
       </DialogActions>
     </Dialog>

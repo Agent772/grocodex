@@ -11,6 +11,7 @@ import { useContainers } from '../../hooks/useContainers';
 import { ContainerBreadcrumbLabel } from '../containers/ContainerBreadcrumbLabel';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { useTranslation } from 'react-i18next';
 
 export interface GroceryItemCardProps {
   groceryItems: GroceryItemDocType[];
@@ -27,6 +28,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   const mainItem = groceryItems[0];
   const { product } = useGroceryItemDetails(mainItem);
   const containerOptions = useContainers();
+  const { t } = useTranslation();
 
   // Group by container_id for location details
   const locationGroups = groceryItems.reduce<Record<string, GroceryItemDocType[]>>((acc, item) => {
@@ -64,7 +66,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
       >
       {/* Edit button at top right */}
       <IconButton
-        aria-label="Edit"
+        aria-label={t('aria.edit', 'Edit')}
         size="small"
         sx={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
         onClick={e => {
@@ -76,7 +78,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
       </IconButton>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Avatar src={product?.image_url} sx={{ mr: 2 }} />
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>{product?.name || 'Unknown Product'}</Typography>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>{product?.name || t('groceryCard.unknownProduct', 'Unknown Product')}</Typography>
       </Box>
       {/* Summary row: show location only if all items share it, else show hint */}
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'space-between' }}>
@@ -87,7 +89,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
               {getContainer(mainItem.container_id) && containerOptions.length > 0 ? (
                 <ContainerBreadcrumbLabel container={getContainer(mainItem.container_id)!} containerOptions={containerOptions} />
               ) : (
-                <Typography variant="body2" color="text.secondary">Unknown Location</Typography>
+                <Typography variant="body2" color="text.secondary">{t('groceryCard.unknownLocation', 'Unknown Location')}</Typography>
               )}
             </>
           ) : (
@@ -96,7 +98,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
                 <IconButton
                   size="small"
                   onClick={e => { e.stopPropagation(); setExpanded(exp => !exp); }}
-                  aria-label="Show locations"
+                  aria-label={t('groceryCard.aria.showLocations', 'Show locations')}
                   sx={{ p: 0, mr: 1 }}
                 >
                   {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -107,7 +109,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
                 color="text.secondary" 
                 sx={{ fontStyle: 'italic', fontSize: '0.85rem' }}  
                 onClick={e => { e.stopPropagation(); setExpanded(exp => !exp); }}>
-                    Expand to show locations
+                    {t('groceryCard.expandToShowLocations', 'Expand to show locations')}
               </Typography>
             </>
           )}
@@ -124,7 +126,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
       {/* Expanded details for multiple locations */}
       {expanded && locationIds.length > 1 && (
         <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Locations:</Typography>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>{t('grocery.locations', 'Locations:')}</Typography>
           {locationIds.map(locId => {
             const container = getContainer(locId);
             // Sum rest_quantity for this location
@@ -138,7 +140,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
                 {container ? (
                   <ContainerBreadcrumbLabel container={container} containerOptions={containerOptions} />
                 ) : (
-                  <Typography variant="body2" color="text.secondary">Unknown Location</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('groceryCard.unknownLocation', 'Unknown Location')}</Typography>
                 )}
                 <Box sx={{display: 'flex', alignItems: 'center', ml: 'auto'}}>
                     <Typography variant="body2" sx={{ ml: 2 }}>

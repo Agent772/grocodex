@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRxDB } from '../../db/RxDBProvider';
+import { useRxDB } from 'rxdb-hooks';
 import { ContainerDocType } from '../../types/dbCollections';
 
 export function useContainers() {

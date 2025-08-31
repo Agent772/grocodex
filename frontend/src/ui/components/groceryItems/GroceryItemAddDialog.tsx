@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRxDB } from '../../../db/RxDBProvider';
+import { useRxDB } from 'rxdb-hooks';
 import { useProductGroupActions } from '../../hooks/useProductGroupActions';
 import { useProductActions } from '../../hooks/useProductActions';
 import { Fab, Autocomplete, Menu, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, MenuItem, IconButton, CircularProgress } from '@mui/material';
@@ -8,9 +8,7 @@ import { useContainerSearch } from '../../hooks/useContainerSearch';
 import { findGroceryItemByProductId } from '../../hooks/useGroceryItemSearch';
 import { ArrowDropDown as ArrowDropDownIcon, Save as SaveIcon, QrCodeScanner as QrCodeScannerIcon, Close as CloseIcon, SaveAs as SaveAsIcon, LibraryAdd as LibraryAddIcon, DataSaverOn as DataSaverOnIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
 import { UNIT_OPTIONS } from '../../../types/unitOptions';
-import { lookupOpenFoodFactsBarcode } from '../../../external/openFoodFacts';
 import { useGroceryItemActions } from '../../hooks/useGroceryItemActions';
 import { GroceryItemDocType, ContainerDocType } from '../../../types/dbCollections';
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
@@ -93,6 +91,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     setScanning(true);
     // Here you would integrate QuaggaJS or zxing-js for barcode scanning
     // For now, simulate with a prompt
+    // TODO: Implement real barcode scanning
     const code = window.prompt('Scan or enter barcode:');
     if (code) {
       setBarcode(code);

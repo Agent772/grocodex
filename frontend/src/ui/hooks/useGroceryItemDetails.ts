@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { GroceryItemDocType, ProductDocType, ContainerDocType } from '../../types/dbCollections';
-import { useRxDB } from '../../db/RxDBProvider';
+import { useRxDB } from 'rxdb-hooks';
 
 export interface GroceryItemDetails {
   groceryItem: GroceryItemDocType;

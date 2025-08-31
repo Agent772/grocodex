@@ -2,6 +2,7 @@ import React from 'react';
 import { TextField, MenuItem } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { UNIT_OPTIONS } from '../../types/unitOptions';
+import { getUnitLabel } from '../utils/getUnitLabel';
 
 interface UnitDropdownProps {
   value: string;
@@ -16,7 +17,7 @@ export const UnitDropdown: React.FC<UnitDropdownProps> = ({ value, onChange, lab
   return (
     <TextField
       select
-      label={label || t('product.unit', 'Unit')}
+      label={getUnitLabel(value, t)}
       value={value}
       onChange={e => onChange(e.target.value)}
       sx={sx}
@@ -24,7 +25,7 @@ export const UnitDropdown: React.FC<UnitDropdownProps> = ({ value, onChange, lab
     >
       {UNIT_OPTIONS.map(opt => (
         <MenuItem key={opt} value={opt}>
-          {opt === 'pcs' ? t('product.unit.pcs', 'pcs') : opt}
+          {getUnitLabel(opt, t)}
         </MenuItem>
       ))}
     </TextField>

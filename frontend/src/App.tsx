@@ -5,14 +5,14 @@ import { TopAppBar } from './ui/components/nav/TopAppBar';
 import { BottomNav } from './ui/components/nav/BottomNav';
 import { SideDrawer } from './ui/components/nav/SideDrawer';
 import { PantryOverview } from './ui/pages/PantryOverview';
-import { I18nextProvider, useTranslation } from 'react-i18next';
+import {ContainerOverview} from './ui/pages/ContainerOverview';
+import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 
 function AppContent() {
   const [nav, setNav] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
-  const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleLogoClick = () => {
@@ -31,7 +31,7 @@ function AppContent() {
       content = <PantryOverview />;
       break;
     case 3:
-      content = <Typography variant="h5" align="center">Containers (Coming soon)</Typography>;
+      content = <ContainerOverview />;
       break;
     default:
       content = null;

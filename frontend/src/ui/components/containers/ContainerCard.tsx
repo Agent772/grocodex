@@ -1,0 +1,41 @@
+import React from 'react';
+import { Card, CardContent, Avatar, Typography, Box, Breadcrumbs, Chip } from '@mui/material';
+import { useContainer } from '../../../db/hooks/useContainer';
+import { useContainerKPIs } from '../../../db/hooks/useContainerKPIs';
+import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
+
+
+interface ContainerCardProps {
+  containerId: string;
+}
+
+export const ContainerCard: React.FC<ContainerCardProps> = ({ containerId }) => {
+  const { container, breadcrumb } = useContainer(containerId);
+  const { childContainerCount, groceryItemCount } = useContainerKPIs(containerId);
+  const { t } = useTranslation();
+  const theme = useTheme();
+
+  return (
+    <Card sx={{ display: 'flex', borderLeft: `8px solid ${container?.ui_color || theme.palette.primary.main}`, mb: 2 }}>
+      <Box sx={{ flex: 1 }}>
+        <CardContent sx={{ display: 'flex', alignItems: 'center', pt: 1 }}>
+          <Avatar src={container?.photo_url} sx={{ width: 56, height: 56, mr: 2 }} />
+          <Box>
+            <Typography variant="h6">
+              {container?.name}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                {t('container.inside.containers', 'Containers inside:')} <b>{childContainerCount}</b>
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('container.inside.groceryItems', 'GroceryItems inside:')} <b>{groceryItemCount}</b>
+              </Typography>
+            </Box>
+          </Box>
+        </CardContent>
+      </Box>
+    </Card>
+  );
+};

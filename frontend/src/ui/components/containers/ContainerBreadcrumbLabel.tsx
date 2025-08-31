@@ -1,6 +1,7 @@
 import React from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import { ContainerDocType } from '../../../types/dbCollections';
+import { TFunction } from 'i18next';
 
 interface ContainerBreadcrumbLabelProps {
   container: ContainerDocType;
@@ -36,7 +37,7 @@ export const ContainerBreadcrumbLabel: React.FC<ContainerBreadcrumbLabelProps> =
   );
 };
 
-export function getContainerBreadcrumbLabel(container: ContainerDocType, containerOptions: ContainerDocType[]): string {
+export function getContainerBreadcrumbLabel(container: ContainerDocType, containerOptions: ContainerDocType[], t: TFunction): string {
   let label = container.name;
   let current = container;
   const visited = new Set();
@@ -44,7 +45,7 @@ export function getContainerBreadcrumbLabel(container: ContainerDocType, contain
     visited.add(current.parent_container_id);
     const parentObj = containerOptions.find(c => c.id === current.parent_container_id);
     if (parentObj) {
-      label = parentObj.name + ' > ' + label;
+      label = parentObj.name + ' ' + t('container.breadcrumb.separator','>') + ' ' + label;
       current = parentObj;
     } else {
       break;

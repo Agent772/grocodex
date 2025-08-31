@@ -1,7 +1,7 @@
 import { createRxDatabase, addRxPlugin, RxDatabase, RxCollectionCreator } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-import { addCreatedAtHook, addUpdatedAtHook } from './hooks/timestampHooks';
-import { addRestQuantityDefaultHook } from './hooks/groceryItemHooks';
+//import { addCreatedAtHook, addUpdatedAtHook } from './hooks/timestampHooks';
+//import { addRestQuantityDefaultHook } from './hooks/groceryItemHooks';
 import { GrocodexCollections } from '../types/dbCollections';
 import containerSchema from './schemas/container.schema';
 import supermarketSchema from './schemas/supermarket.schema';
