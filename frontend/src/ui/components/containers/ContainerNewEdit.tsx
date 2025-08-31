@@ -157,7 +157,7 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
             />
             <Autocomplete
               options={containerOptions}
-              getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions)}
+              getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions, t)}
               value={parent}
               onChange={(_, value) => setParent(value)}
               renderInput={params => (
@@ -172,7 +172,7 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
               fullWidth={isMobile}
               disableClearable={false}
               filterOptions={(options, state) =>
-                options.filter(opt => getContainerBreadcrumbLabel(opt, containerOptions).toLowerCase().includes(state.inputValue.toLowerCase()))
+                options.filter(opt => getContainerBreadcrumbLabel(opt, containerOptions, t).toLowerCase().includes(state.inputValue.toLowerCase()))
               }
               sx={{ minWidth: isMobile ? undefined : 180, width: isMobile ? '100%' : '100%', mb: 2 }}
             />

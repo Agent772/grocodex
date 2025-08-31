@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Skeleton, Breadcrumbs, useTheme, Link, useMediaQuery } from '@mui/material';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Masonry from '@mui/lab/Masonry';
 import { useRxDB } from 'rxdb-hooks';
 import { ContainerDocType } from '../../types/dbCollections';
 import { ContainerCard } from '../components/containers/ContainerCard';
+import AddContainerDialog from '../components/containers/ContainerNewEdit';
+import GroceryItemAddDialog from '../components/groceryItems/GroceryItemAddDialog';
 import { useTranslation } from 'react-i18next';
 
 const ContainerOverview: React.FC = () => {
@@ -11,6 +18,8 @@ const ContainerOverview: React.FC = () => {
   const [search, setSearch] = useState('');
   const [containers, setContainers] = useState<ContainerDocType[]>([]);
   const [parentId, setParentId] = useState<string | null>(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addGroceryOpen, setAddGroceryOpen] = useState(false);
   const theme = useTheme();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -51,6 +60,19 @@ const ContainerOverview: React.FC = () => {
       sx={{ position: 'relative', height: '100%', width: '100%' }}
     >
       <Typography variant="h4" mb={2} sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}>Container Overview</Typography>
+      {/* Dialogs for SpeedDial actions */}
+      <AddContainerDialog
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+        parentContainer={parentContainer || undefined}
+        containerOptions={containers}
+      />
+      <GroceryItemAddDialog
+        open={addGroceryOpen}
+        onClose={() => setAddGroceryOpen(false)}
+        // Pass parentContainer as container if inside a container
+        {...(parentContainer ? { container: parentContainer } : {})}
+      />
       <Box sx={{ px: 2, pt: 2, pb: 1, width: '100%', maxWidth: { xs: '100%', md: 900 } }}>
         <TextField
           fullWidth
@@ -119,6 +141,40 @@ const ContainerOverview: React.FC = () => {
               ))}
         </Masonry>
       </Box>
+      {/* SpeedDial for actions */}
+      <SpeedDial
+        ariaLabel={t('containerOverview.aria.speedDialLabel', 'Container actions')}
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 72, md: 32 },
+          right: 32,
+          zIndex: 1000
+        }}
+        icon={<SpeedDialIcon />}
+      >
+        <SpeedDialAction
+          icon={<AddBoxIcon />}
+          onClick={() => setAddDialogOpen(true)}
+          slotProps={{
+            tooltip: {
+              title: parentContainer
+                ? t('containerOverview.actions.addSubContainer', 'Add Sub-Container')
+                : t('containerOverview.actions.addContainer', 'Add Container'),
+              open: false
+            }
+          }}
+        />
+        <SpeedDialAction
+          icon={<ShoppingCartIcon />}
+          onClick={() => setAddGroceryOpen(true)}
+          slotProps={{
+            tooltip: {
+              title: t('containerOverview.actions.addGroceryItem', 'Add Grocery Item'),
+              open: false
+            }
+          }}
+        />
+      </SpeedDial>
     </Box>
   );
 };

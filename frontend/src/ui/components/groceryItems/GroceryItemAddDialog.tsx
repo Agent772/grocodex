@@ -15,18 +15,20 @@ import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollection
 import { useProductSearchByBarcode } from '../../hooks/useProductSearchByBarcode';
 import { useProductSearchByName } from '../../hooks/useProductSearchByName';
 
+
 interface GroceryItemAddDialogProps {
   open: boolean;
   onClose: () => void;
   onSaved?: () => void;
+  container?: ContainerDocType;
 }
 
 
 
-const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClose, onSaved }) => {
+const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClose, onSaved, container: initialContainer }) => {
   const db = useRxDB();
   // Container autocomplete state
-  const [container, setContainer] = useState<ContainerDocType | null>(null);
+  const [container, setContainer] = useState<ContainerDocType | null>(initialContainer || null);
   const { containers: containerOptions } = useContainerSearch();
   const { t } = useTranslation();
   // Save actions
@@ -261,7 +263,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     };
   }, [name]);
 
-  // Reset form fields when dialog is closed
+  // Reset form fields when dialog is closed or opened
   useEffect(() => {
     if (!open) {
       setName('');
@@ -269,8 +271,10 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
       setManualFields({ productBrand: '', unit: 'g', quantity: '', buyDate: '', expirationDate: '', notes: '' });
       setContainer(null);
       setLastSearchedBarcode('');
+    } else if (open && initialContainer) {
+      setContainer(initialContainer);
     }
-  }, [open]);
+  }, [open, initialContainer]);
 
   // --- All hooks and logic above ---
   return (
@@ -369,7 +373,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
           {/* Container autocomplete field */}
           <Autocomplete
             options={containerOptions}
-            getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions)}
+            getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions, t)}
             value={container}
             onChange={(_, value) => setContainer(value)}
             renderOption={(props, option) => (

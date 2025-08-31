@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
 import { Box, Typography, TextField } from '@mui/material';
-import AddBoxIcon from '@mui/icons-material/AddBox';
-import AddContainerDialog from '../components/containers/ContainerNewEdit';
 import GroceryItemAddDialog from '../components/groceryItems/GroceryItemAddDialog';
 import GroceryItemCard from '../components/groceryItems/GroceryItemCard';
 import Badge from '@mui/material/Badge';
 import { useRxDB } from 'rxdb-hooks';
 import { GroceryItemDocType } from '../../types/dbCollections';
-import { useContainers } from '../hooks/useContainers';
 import Masonry from '@mui/lab/Masonry';
 import { useTranslation } from 'react-i18next';
 
@@ -19,10 +14,8 @@ const PantryOverview: React.FC = () => {
   const [search, setSearch] = useState('');
   const [productGroups, setProductGroups] = useState<Record<string, string>>({});
   const [products, setProducts] = useState<Record<string, string>>({});
-  const [addContainerOpen, setAddContainerOpen] = useState(false);
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
   const { t } = useTranslation();
-  const containers = useContainers();
   const db = useRxDB();
   const [groceryItems, setGroceryItems] = useState<GroceryItemDocType[]>([]);
 
@@ -58,7 +51,6 @@ const PantryOverview: React.FC = () => {
       >
         {t('pantryOverview.title', 'Pantry Overview')}
       </Typography>
-      <AddContainerDialog open={addContainerOpen} onClose={() => setAddContainerOpen(false)} containerOptions={containers} />
       <GroceryItemAddDialog open={addGroceryOpen} onClose={() => setAddGroceryOpen(false)} />
       <Box
         sx={{
@@ -106,36 +98,19 @@ const PantryOverview: React.FC = () => {
           </Masonry>
         </Box>
       </Box>
-      <SpeedDial
-        ariaLabel={t('pantryOverview.aria.speedDialLabel', 'Pantry actions')}
+      <Fab
+        color="primary"
+        aria-label={t('pantryOverview.aria.addGroceryItem', 'Add Grocery Item')}
         sx={{
           position: 'fixed',
           bottom: { xs: 72, md: 32 },
-          right: 32
+          right: 32,
+          zIndex: 1000
         }}
-        icon={<SpeedDialIcon />}
+        onClick={() => setAddGroceryOpen(true)}
       >
-        <SpeedDialAction
-          icon={<AddBoxIcon />}
-          slotProps={{
-            tooltip: {
-              title: t('pantryOverview.actions.addContainer', 'Add Container'),
-              open: false
-            }
-          }}
-          onClick={() => setAddContainerOpen(true)}
-        />
-        <SpeedDialAction
-          icon={<ShoppingCartIcon />}
-          slotProps={{
-            tooltip: {
-              title: t('pantryOverview.actions.addGroceryItem', 'Add Grocery Item'),
-              open: false
-            }
-          }}
-          onClick={() => setAddGroceryOpen(true)}
-        />
-      </SpeedDial>
+        <AddIcon />
+      </Fab>
     </Box>
   )
 }
