@@ -33,10 +33,10 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   const { t } = useTranslation();
   // Save actions
   const SAVE_ACTIONS = [
-    { key: 'saveClose', label: t('grocery.add.save_close', 'Save & Close'), icon: <SaveIcon /> },
-    { key: 'addNext', label: t('grocery.add.save_add_next', 'Save & Add Next'), icon: <LibraryAddIcon /> },
-    { key: 'addSame', label: t('grocery.add.save_add_same', 'Save & Add Same'), icon: <SaveAsIcon /> },
-    { key: 'saveScan', label: t('grocery.add.save_scan', 'Save & Scan'), icon: <DataSaverOnIcon /> },
+    { key: 'saveClose', label: t('groceryItem.add.save_close', 'Save & Close'), icon: <SaveIcon /> },
+    { key: 'addNext', label: t('groceryItem.add.save_add_next', 'Save & Add Next'), icon: <LibraryAddIcon /> },
+    { key: 'addSame', label: t('groceryItem.add.save_add_same', 'Save & Add Same'), icon: <SaveAsIcon /> },
+    { key: 'saveScan', label: t('groceryItem.add.save_scan', 'Save & Scan'), icon: <DataSaverOnIcon /> },
   ];
   const [saveAction, setSaveAction] = useState('saveClose');
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -175,7 +175,8 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     setName('');
     setBarcode('');
     setManualFields({ productBrand: '', unit: 'g', quantity: '', buyDate: '', expirationDate: '', notes: '' });
-    setContainer(null);
+    // If initialContainer is provided, reset to it; otherwise, clear
+    setContainer(initialContainer || null);
   };
 
   const handleSave = async () => {
@@ -279,7 +280,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   // --- All hooks and logic above ---
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('grocery.add.title', 'Add Grocery Item')}</DialogTitle>
+      <DialogTitle>{t('groceryItem.add.title', 'Add Grocery Item')}</DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={1} mt={2}>
           <Autocomplete
@@ -299,7 +300,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             renderInput={params => (
               <TextField
                 {...params}
-                label={t('grocery.add.product_name', 'Name')}
+                label={t('groceryItem.add.product_name', 'Name')}
                 fullWidth
                 autoFocus
                 required
@@ -348,7 +349,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
-              label={t('grocery.buy_date', 'Buy Date')}
+              label={t('groceryItem.buyDate', 'Buy Date')}
               type="date"
               value={manualFields.buyDate || new Date().toISOString().slice(0, 10)}
               onChange={e => handleManualFieldChange('buyDate', e.target.value)}
@@ -356,7 +357,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               fullWidth
             />
             <TextField
-              label={t('grocery.expiration_date', 'Expiration Date')}
+              label={t('groceryItem.expirationDate', 'Expiration Date')}
               type="date"
               value={manualFields.expirationDate}
               onChange={e => handleManualFieldChange('expirationDate', e.target.value)}
@@ -365,7 +366,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             />
           </Box>
           <TextField
-            label={t('grocery.notes', 'Notes')}
+            label={t('groceryItem.notes', 'Notes')}
             value={manualFields.notes}
             onChange={e => handleManualFieldChange('notes', e.target.value)}
             fullWidth
@@ -384,7 +385,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             renderInput={params => (
               <TextField
                 {...params}
-                label={t('grocery.add.container', 'Container / Location')}
+                label={t('groceryItem.container', 'Container / Location')}
                 fullWidth
               />
             )}
@@ -408,7 +409,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             {SAVE_ACTIONS.find(a => a.key === saveAction)?.icon}
           </Fab>
           <IconButton
-            aria-label={t('grocery.add.save_action', 'Select Save Action')}
+            aria-label={t('groceryItem.add.save_action', 'Select Save Action')}
             onClick={handleMenuOpen}
             size="small"
           >

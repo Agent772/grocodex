@@ -126,7 +126,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
       {/* Expanded details for multiple locations */}
       {expanded && locationIds.length > 1 && (
         <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>{t('grocery.locations', 'Locations:')}</Typography>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>{t('groceryItem.locations', 'Locations:')}</Typography>
           {locationIds.map(locId => {
             const container = getContainer(locId);
             // Sum rest_quantity for this location

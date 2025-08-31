@@ -4,14 +4,16 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import LocalDiningIcon from '@mui/icons-material/LocalDining';
 import Masonry from '@mui/lab/Masonry';
 import { useRxDB } from 'rxdb-hooks';
 import { ContainerDocType } from '../../types/dbCollections';
 import { ContainerCard } from '../components/containers/ContainerCard';
+import GroceryItemCard from '../components/groceryItems/GroceryItemCard';
 import AddContainerDialog from '../components/containers/ContainerNewEdit';
 import GroceryItemAddDialog from '../components/groceryItems/GroceryItemAddDialog';
 import { useTranslation } from 'react-i18next';
+import { GroceryItemDocType } from '../../types/dbCollections';
 
 const ContainerOverview: React.FC = () => {
   const db = useRxDB();
@@ -20,6 +22,7 @@ const ContainerOverview: React.FC = () => {
   const [parentId, setParentId] = useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
+  const [groceryItems, setGroceryItems] = useState<GroceryItemDocType[]>([]);
   const theme = useTheme();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -30,7 +33,16 @@ const ContainerOverview: React.FC = () => {
     const sub = db.collections.container.find().$.subscribe(docs => {
       setContainers(docs.map(doc => doc.toJSON()));
     });
-    return () => sub.unsubscribe();
+    let grocerySub: any;
+    if (db.collections.grocery_item) {
+      grocerySub = db.collections.grocery_item.find().$.subscribe(docs => {
+        setGroceryItems(docs.map(doc => doc.toJSON()));
+      });
+    }
+    return () => {
+      sub.unsubscribe();
+      if (grocerySub) grocerySub.unsubscribe();
+    };
   }, [db]);
 
   // Filter containers based on search or parentId
@@ -47,6 +59,11 @@ const ContainerOverview: React.FC = () => {
   // Get parent container for breadcrumb
   const parentContainer = parentId ? containers.find(c => c.id === parentId) : null;
 
+  // Filter groceries for current container
+  const groceriesInContainer = parentContainer
+    ? groceryItems.filter(item => item.container_id === parentContainer.id)
+    : [];
+
   // Show skeletons per card slot if containers are not loaded
   const showSkeletons = !db || containers.length === 0;
 
@@ -57,9 +74,26 @@ const ContainerOverview: React.FC = () => {
       alignItems="center"
       pt={{ xs: 2, sm: 4, md: 4 }}
       pb={{ xs: 2, sm: 4, md: 4 }}
-      sx={{ position: 'relative', height: '100%', width: '100%' }}
+      sx={{ 
+        position: 'relative', 
+        height: '100%', 
+        width: '100%',
+        px: { xs: 2, sm: 3, md: 0 }
+      }}
     >
-      <Typography variant="h4" mb={2} sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}>Container Overview</Typography>
+      {!isMobile && (
+        <Typography 
+          variant="h4" 
+          mb={2} 
+          sx={{ 
+            width: '100%', 
+            maxWidth: { xs: '100%', md: 900 }, 
+            textAlign: 'center' 
+          }}
+          >
+            {t('containerOverview.title', 'Container Overview')}
+          </Typography>
+      )}
       {/* Dialogs for SpeedDial actions */}
       <AddContainerDialog
         open={addDialogOpen}
@@ -73,10 +107,10 @@ const ContainerOverview: React.FC = () => {
         // Pass parentContainer as container if inside a container
         {...(parentContainer ? { container: parentContainer } : {})}
       />
-      <Box sx={{ px: 2, pt: 2, pb: 1, width: '100%', maxWidth: { xs: '100%', md: 900 } }}>
+      <Box sx={{ pt: 2, pb: 1, width: '100%', maxWidth: { xs: '100%', md: 900 } }}>
         <TextField
           fullWidth
-          label={t('containers.searchLabel')}
+          label={t('containerOverview.searchLabel')}
           variant="outlined"
           value={search}
           onChange={e => {
@@ -87,7 +121,7 @@ const ContainerOverview: React.FC = () => {
         />
       </Box>
       {parentContainer && (
-        <Box sx={{ px: 2, pb: 1, width: '100%', maxWidth: { xs: '100%', md: '80%' } }}>
+        <Box sx={{ pb: 1, width: '100%', maxWidth: { xs: '100%', md: '80%' } }}>
           <Breadcrumbs 
             aria-label={t('aria.breadcrumb')} 
             maxItems={maxBreadcrumbItems} 
@@ -108,7 +142,7 @@ const ContainerOverview: React.FC = () => {
               return [
                 // Add root
                 <Link key="root" underline="hover" color="inherit" onClick={() => setParentId(null)} sx={{ cursor: 'pointer' }}>
-                  {t('containers.root')}
+                  {t('containerOverview.breadcrumb.root')}
                 </Link>,
                 ...chain.map((c, idx) => (
                   <Link
@@ -126,8 +160,25 @@ const ContainerOverview: React.FC = () => {
           </Breadcrumbs>
         </Box>
       )}
-      <Box display={'flex'} justifyContent={'center'} sx={{ paddingTop: 2, width: '100%' }}>
-        <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: { xs: '100%', md: '80%' }, px: 2 }}>
+      {displayContainers.length > 0 && (
+      <Box
+        sx={{
+          paddingTop: displayContainers.length === 0 ? 0 : 2,
+          width: '100%',
+          minHeight: displayContainers.length === 0 ? 0 : undefined,
+          maxWidth: { xs: '100%', md: '80%' },
+          mx: 'auto'
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 2 }}>{t('common.containers', 'Containers')}</Typography>
+        <Masonry
+          columns={{ sm: 1, md: 2 }}
+          spacing={1}
+          sx={{
+            px: 2,
+            minHeight: displayContainers.length === 0 ? 0 : undefined
+          }}
+        >
           {showSkeletons
             ? [...Array(4)].map((_, idx) => (
                 <Skeleton key={idx} variant="rectangular" height={120} sx={{ mb: 2, borderRadius: 2 }} />
@@ -141,6 +192,26 @@ const ContainerOverview: React.FC = () => {
               ))}
         </Masonry>
       </Box>
+      )}
+
+      {/* Groceries in current container */}
+      {parentContainer && groceriesInContainer.length > 0 && (
+        <Box sx={{ width: '100%', maxWidth: { xs: '100%', md: '80%' }, mt: 1 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>{t('common.groceries', 'Groceries')}</Typography>
+          <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '100%', px: 2 }}>
+            {/* Group groceries by product_id for GroceryItemCard */}
+            {Object.values(
+              groceriesInContainer.reduce((acc, item) => {
+                if (!acc[item.product_id]) acc[item.product_id] = [] as GroceryItemDocType[];
+                acc[item.product_id].push(item);
+                return acc;
+              }, {} as Record<string, GroceryItemDocType[]>)
+            ).map((items, idx) => (
+              <GroceryItemCard key={items[0].id || idx} groceryItems={items} />
+            ))}
+          </Masonry>
+        </Box>
+      )}
       {/* SpeedDial for actions */}
       <SpeedDial
         ariaLabel={t('containerOverview.aria.speedDialLabel', 'Container actions')}
@@ -165,7 +236,7 @@ const ContainerOverview: React.FC = () => {
           }}
         />
         <SpeedDialAction
-          icon={<ShoppingCartIcon />}
+          icon={<LocalDiningIcon />}
           onClick={() => setAddGroceryOpen(true)}
           slotProps={{
             tooltip: {

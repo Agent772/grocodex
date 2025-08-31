@@ -32,18 +32,18 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{t('groceryItem.Use.title', 'Use Item')}</DialogTitle>
+      <DialogTitle>{t('groceryItem.use.title', 'Use Item')}</DialogTitle>
       <DialogContent sx={{ minWidth: 300 }}>
         <Typography gutterBottom>
-          {t('groceryItem.Use.available', 'Available')}: {totalRestQuantity}
+          {t('groceryItem.use.available', 'Available')}: {totalRestQuantity}
         </Typography>
             <Box display={'flex'} alignItems={'center'} alignContent={'center'}>
               <FormControl fullWidth variant="outlined" sx={{ mt: 1 }}>
-                <InputLabel htmlFor="outlined-adornment-amount">{t('groceryItem.Use.amountUsed', 'Amount Used')}</InputLabel>
+                <InputLabel htmlFor="outlined-adornment-amount">{t('groceryItem.use.amountUsed', 'Amount Used')}</InputLabel>
                 <OutlinedInput
                   id="outlined-adornment-amount"
                   type="number"
-                  label={t('groceryItem.Use.amountUsed', 'Amount Used')}
+                  label={t('groceryItem.use.amountUsed', 'Amount Used')}
                   value={usedAmount}
                   onChange={e => setUsedAmount(Number(e.target.value))}
                   endAdornment={<InputAdornment position="end">{product?.unit || ''}</InputAdornment>}
@@ -64,7 +64,7 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
                     color="secondary"
                     onClick={() => setUsedAmount(totalRestQuantity)}
                 >
-                    {t('groceryItem.UseDialog.useAll', 'All')}
+                    {t('groceryItem.use.useAll', 'All')}
                 </Button>
             </Box>
       </DialogContent>

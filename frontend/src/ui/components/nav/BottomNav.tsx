@@ -30,7 +30,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ value, onChange }) => {
       <BottomNavigation value={value} onChange={onChange} showLabels>
         <BottomNavigationAction label={t('nav.shopping_lists', 'Shopping Lists')} icon={<ListAltIcon />} />
         <BottomNavigationAction label={t('nav.cookiedoo_import', 'CookieDoo Import')} icon={<ImportExportIcon />} />
-        <BottomNavigationAction label={t('nav.pantry_overview', 'Pantry Overview')} icon={<KitchenIcon />} />
+        <BottomNavigationAction label={t('nav.groceries', 'Groceries')} icon={<KitchenIcon />} />
         <BottomNavigationAction label={t('nav.containers', 'Containers')} icon={<ShelvesIcon />} />
       </BottomNavigation>
     </Paper>

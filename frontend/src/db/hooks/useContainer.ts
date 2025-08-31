@@ -16,12 +16,6 @@ export function useContainer(containerId?: string): {
     { json: true }
   );
 
-  // Debug: log the containers array to inspect attributes and data
-  if (containers) {
-    const docs = containers.map((doc: any) => doc.toJSON ? doc.toJSON() : doc);
-    console.log('[useContainer] containers:', docs);
-  }
-
   // Build breadcrumb synchronously from containers
   const docs: ContainerDocType[] = Array.isArray(containers)
     ? containers.map((doc) => (typeof (doc as any).toJSON === 'function' ? (doc as any).toJSON() as ContainerDocType : doc as ContainerDocType))
@@ -40,7 +34,6 @@ export function useContainer(containerId?: string): {
       chain.unshift(current);
       current = current.parent_container_id ? docs.find((c) => c.id === current!.parent_container_id) : undefined;
     }
-    console.log('[useContainer] breadcrumb:', chain.map(c => c.name));
     return chain;
   }, [containerId, docs]);
 

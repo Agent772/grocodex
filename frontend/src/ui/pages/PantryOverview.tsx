@@ -9,6 +9,8 @@ import { useRxDB } from 'rxdb-hooks';
 import { GroceryItemDocType } from '../../types/dbCollections';
 import Masonry from '@mui/lab/Masonry';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 
 const PantryOverview: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -18,6 +20,8 @@ const PantryOverview: React.FC = () => {
   const { t } = useTranslation();
   const db = useRxDB();
   const [groceryItems, setGroceryItems] = useState<GroceryItemDocType[]>([]);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (!db) return;
@@ -42,15 +46,22 @@ const PantryOverview: React.FC = () => {
       alignItems="center"
       pt={{ xs: 2, sm: 4, md: 4 }}
       pb={{ xs: 2, sm: 4, md: 4 }}
-      sx={{ position: 'relative', height: '100%', width: '100%' }}
+      sx={{ 
+        position: 'relative', 
+        height: '100%', 
+        width: '100%',
+        px: { xs: 2, sm: 3, md: 0 }
+      }}
     >
-      <Typography 
-        variant="h4" 
-        mb={2} 
-        sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
-      >
-        {t('pantryOverview.title', 'Pantry Overview')}
+      {!isMobile && (
+        <Typography
+          variant="h4"
+          mb={2}
+          sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
+        >
+          {t('pantryOverview.title', 'Pantry Overview')}
       </Typography>
+      )}
       <GroceryItemAddDialog open={addGroceryOpen} onClose={() => setAddGroceryOpen(false)} />
       <Box
         sx={{

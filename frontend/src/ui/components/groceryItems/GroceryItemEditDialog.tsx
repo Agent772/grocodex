@@ -83,7 +83,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('groceryItem.EditDialog.title', 'Edit Grocery Item')}</DialogTitle>
+      <DialogTitle>{t('groceryItem.edit.title', 'Edit Grocery Item')}</DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={1} mt={2}>
           <TextField
