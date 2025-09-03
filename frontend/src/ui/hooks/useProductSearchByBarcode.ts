@@ -1,6 +1,6 @@
 import { useRxDB } from 'rxdb-hooks';
 import { ProductDocType } from '../../types/dbCollections';
-import { lookupOpenFoodFactsBarcode } from '../../external/openFoodFacts';
+import { lookupOpenFoodFactsBarcode } from '../../externalAPIs/openFoodFacts';
 
 export function useProductSearchByBarcode() {
   const db = useRxDB();
