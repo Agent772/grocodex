@@ -1,5 +1,5 @@
 import React, { use, useState } from 'react';
-import { CssBaseline, useMediaQuery, Box, Typography } from '@mui/material';
+import { CssBaseline, useMediaQuery, Box, Typography, Button, Snackbar } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TopAppBar } from './ui/components/nav/TopAppBar';
 import { BottomNav } from './ui/components/nav/BottomNav';
@@ -8,10 +8,14 @@ import { PantryOverview } from './ui/pages/PantryOverview';
 import {ContainerOverview} from './ui/pages/ContainerOverview';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
+import BarcodeScannerDialog from './ui/components/BarcodeScannerDialog';
 
 function AppContent() {
   const [nav, setNav] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanResult, setScanResult] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -65,8 +69,28 @@ function AppContent() {
           </>
         )}
         <Box pt={8} pb={8} minHeight="100vh" display="flex" flexDirection="column" alignItems="center" bgcolor={theme.palette.background.default}>
+          {/* Debug button for scanner dialog only on shopping list page */}
+          {nav === 0 && (
+            <Button variant="outlined" color="secondary" sx={{ mb: 2 }} onClick={() => setScannerOpen(true)}>
+              Debug: Open Barcode Scanner
+            </Button>
+          )}
           {content}
         </Box>
+        <BarcodeScannerDialog
+          open={scannerOpen}
+          onClose={() => setScannerOpen(false)}
+          onScan={(result) => {
+            setScanResult(result);
+            setSnackbarOpen(true);
+          }}
+        />
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={3000}
+          onClose={() => setSnackbarOpen(false)}
+          message={scanResult ? `Scanned: ${scanResult}` : ''}
+        />
         {isMobile && <BottomNav value={nav} onChange={(_, v) => setNav(v)} />}
     </I18nextProvider>
   );
