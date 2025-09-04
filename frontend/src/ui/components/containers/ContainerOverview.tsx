@@ -72,7 +72,7 @@ const ContainerOverview: React.FC = () => {
       display="flex"
       flexDirection="column"
       alignItems="center"
-      pt={{ xs: 2, sm: 4, md: 4 }}
+      //pt={{ xs: 2, sm: 4, md: 4 }}
       pb={{ xs: 2, sm: 4, md: 4 }}
       sx={{ 
         position: 'relative', 
@@ -85,11 +85,7 @@ const ContainerOverview: React.FC = () => {
         <Typography 
           variant="h4" 
           mb={2} 
-          sx={{ 
-            width: '100%', 
-            maxWidth: { xs: '100%', md: 900 }, 
-            textAlign: 'center' 
-          }}
+          sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
           >
             {t('containerOverview.title', 'Container Overview')}
           </Typography>
@@ -107,111 +103,127 @@ const ContainerOverview: React.FC = () => {
         // Pass parentContainer as container if inside a container
         {...(parentContainer ? { container: parentContainer } : {})}
       />
-      <Box sx={{ pt: 2, pb: 1, width: '100%', maxWidth: { xs: '100%', md: 900 } }}>
-        <TextField
-          fullWidth
-          label={t('containerOverview.searchLabel')}
-          variant="outlined"
-          value={search}
-          onChange={e => {
-            setSearch(e.target.value);
-            if (e.target.value) setParentId(null);
-          }}
-          size="small"
-        />
-      </Box>
-      {parentContainer && (
-        <Box sx={{ pb: 1, width: '100%', maxWidth: { xs: '100%', md: '80%' } }}>
-          <Breadcrumbs 
-            aria-label={t('aria.breadcrumb')} 
-            maxItems={maxBreadcrumbItems} 
-            itemsAfterCollapse={2} 
-            itemsBeforeCollapse={1}
-            separator="›"
-          >
-            {/* Build breadcrumb chain from root to parentContainer */}
-            {(() => {
-              const chain: ContainerDocType[] = [];
-              let current: ContainerDocType | undefined | null = parentContainer;
-              while (current) {
-                chain.unshift(current);
-                current = current.parent_container_id
-                  ? containers.find(c => c.id === current?.parent_container_id) || null
-                  : null;
-              }
-              return [
-                // Add root
-                <Link key="root" underline="hover" color="inherit" onClick={() => setParentId(null)} sx={{ cursor: 'pointer' }}>
-                  {t('containerOverview.breadcrumb.root')}
-                </Link>,
-                ...chain.map((c, idx) => (
-                  <Link
-                    key={c.id}
-                    underline="hover"
-                    color={idx === chain.length - 1 ? c.ui_color : 'inherit'}
-                    onClick={() => setParentId(c.id)}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    {c.name}
-                  </Link>
-                ))
-              ];
-            })()}
-          </Breadcrumbs>
-        </Box>
-      )}
-      {displayContainers.length > 0 && (
       <Box
         sx={{
-          paddingTop: displayContainers.length === 0 ? 0 : 2,
           width: '100%',
-          minHeight: displayContainers.length === 0 ? 0 : undefined,
-          maxWidth: { xs: '100%', md: '80%' },
-          mx: 'auto'
+          maxWidth: { xs: '100%', md: 900 },
+          flex: 1,
+          overflow: 'auto',
+          pb: 8,
+          mx: 'auto',
+          borderRadius: { xs: 0, md: 3 },
+          boxShadow: { xs: 'none', md: 3 },
+          backgroundColor: { xs: 'transparent', md: 'background.paper' },
         }}
       >
-        <Typography variant="h6" sx={{ mb: 2 }}>{t('common.containers', 'Containers')}</Typography>
-        <Masonry
-          columns={{ sm: 1, md: 2 }}
-          spacing={1}
-          sx={{
-            px: 2,
-            minHeight: displayContainers.length === 0 ? 0 : undefined
-          }}
-        >
-          {showSkeletons
-            ? [...Array(4)].map((_, idx) => (
-                <Skeleton key={idx} variant="rectangular" height={120} sx={{ mb: 2, borderRadius: 2 }} />
-              ))
-            : displayContainers.map(container => (
-                <Box key={container.id} sx={{ width: '100%', cursor: !search ? 'pointer' : 'default' }} onClick={() => {
-                  if (!search) setParentId(container.id);
-                }}>
-                  <ContainerCard containerId={container.id} />
-                </Box>
-              ))}
-        </Masonry>
-      </Box>
-      )}
-
-      {/* Groceries in current container */}
-      {parentContainer && groceriesInContainer.length > 0 && (
-        <Box sx={{ width: '100%', maxWidth: { xs: '100%', md: '80%' }, mt: 1 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>{t('common.groceries', 'Groceries')}</Typography>
-          <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '100%', px: 2 }}>
-            {/* Group groceries by product_id for GroceryItemCard */}
-            {Object.values(
-              groceriesInContainer.reduce((acc, item) => {
-                if (!acc[item.product_id]) acc[item.product_id] = [] as GroceryItemDocType[];
-                acc[item.product_id].push(item);
-                return acc;
-              }, {} as Record<string, GroceryItemDocType[]>)
-            ).map((items, idx) => (
-              <GroceryItemCard key={items[0].id || idx} groceryItems={items} />
-            ))}
-          </Masonry>
+        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+          <TextField
+            fullWidth
+            label={t('containerOverview.searchLabel', 'Search containers')}
+            variant="outlined"
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              if (e.target.value) setParentId(null);
+            }}
+            size="small"
+          />
         </Box>
-      )}
+        {/* <Box display={'flex'} justifyContent={'center'} sx={{ paddingTop: 2 }}> */}
+          {parentContainer && (
+            <Box sx={{ pb: 1, width: '100%', maxWidth: { xs: '100%', md: '95%' } }}>
+              <Breadcrumbs 
+                aria-label={t('aria.breadcrumb')} 
+                maxItems={maxBreadcrumbItems} 
+                itemsAfterCollapse={2} 
+                itemsBeforeCollapse={1}
+                separator="›"
+              >
+                {/* Build breadcrumb chain from root to parentContainer */}
+                {(() => {
+                  const chain: ContainerDocType[] = [];
+                  let current: ContainerDocType | undefined | null = parentContainer;
+                  while (current) {
+                    chain.unshift(current);
+                    current = current.parent_container_id
+                      ? containers.find(c => c.id === current?.parent_container_id) || null
+                      : null;
+                  }
+                  return [
+                    // Add root
+                    <Link key="root" underline="hover" color="inherit" onClick={() => setParentId(null)} sx={{ cursor: 'pointer' }}>
+                      {t('containerOverview.breadcrumb.root')}
+                    </Link>,
+                    ...chain.map((c, idx) => (
+                      <Link
+                        key={c.id}
+                        underline="hover"
+                        color={idx === chain.length - 1 ? c.ui_color : 'inherit'}
+                        onClick={() => setParentId(c.id)}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {c.name}
+                      </Link>
+                    ))
+                  ];
+                })()}
+              </Breadcrumbs>
+            </Box>
+          )}
+          {displayContainers.length > 0 && (
+          <Box
+            sx={{
+              paddingTop: displayContainers.length === 0 ? 0 : 2,
+              width: '100%',
+              minHeight: displayContainers.length === 0 ? 0 : undefined,
+              maxWidth: { xs: '100%', md: '95%' },
+              mx: 'auto'
+            }}
+            >
+              <Typography variant="h6" sx={{ mb: 2 }}>{t('common.containers', 'Container')}</Typography>
+              <Masonry
+                columns={{ sm: 1, md: 2 }}
+                spacing={1}
+                sx={{
+                  width: '95%',
+                  px: 2,
+                  minHeight: displayContainers.length === 0 ? 0 : undefined
+                }}
+              >
+                {showSkeletons
+                  ? [...Array(4)].map((_, idx) => (
+                      <Skeleton key={idx} variant="rectangular" height={120} sx={{ mb: 2, borderRadius: 2 }} />
+                    ))
+                  : displayContainers.map(container => (
+                      <Box key={container.id} sx={{ width: '100%', cursor: !search ? 'pointer' : 'default' }} onClick={() => {
+                        if (!search) setParentId(container.id);
+                      }}>
+                        <ContainerCard containerId={container.id} />
+                      </Box>
+                    ))}
+              </Masonry>
+            </Box>
+          )}
+          {/* Groceries in current container */}
+          {parentContainer && groceriesInContainer.length > 0 && (
+            <Box sx={{ width: '100%', maxWidth: { xs: '100%', md: '95%' }, mt: 1 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>{t('common.groceries', 'Groceries')}</Typography>
+              <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
+                {/* Group groceries by product_id for GroceryItemCard */}
+                {Object.values(
+                  groceriesInContainer.reduce((acc, item) => {
+                    if (!acc[item.product_id]) acc[item.product_id] = [] as GroceryItemDocType[];
+                    acc[item.product_id].push(item);
+                    return acc;
+                  }, {} as Record<string, GroceryItemDocType[]>)
+                ).map((items, idx) => (
+                  <GroceryItemCard key={items[0].id || idx} groceryItems={items} />
+                ))}
+              </Masonry>
+            </Box>
+          )}
+        {/* </Box> */}
+      </Box>
       {/* SpeedDial for actions */}
       <SpeedDial
         ariaLabel={t('containerOverview.aria.speedDialLabel', 'Container actions')}

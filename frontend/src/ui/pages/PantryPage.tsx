@@ -7,7 +7,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import CategoryIcon from '@mui/icons-material/Category';
 import { GroceryOverview } from '../components/groceryItems/GroceryOverview';
 import { ContainerOverview } from '../components/containers/ContainerOverview';
-// import { ProductOverview } from './ProductOverview'; // For future use
+import { ProductOverview } from '../components/product/ProductOverview'; // For future use
 import { useTranslation } from 'react-i18next';
 
 const PantryPage: React.FC = () => {
@@ -34,7 +34,7 @@ const PantryPage: React.FC = () => {
       </Tabs>
       {activeTab === 0 && <GroceryOverview />}
       {activeTab === 1 && <ContainerOverview />}
-      {/* {activeTab === 2 && <ProductOverview />} */}
+      {activeTab === 2 && <ProductOverview />}
     </Box>
   );
 };

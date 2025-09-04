@@ -44,7 +44,7 @@ const GroceryOverview: React.FC = () => {
       display="flex"
       flexDirection="column"
       alignItems="center"
-      pt={{ xs: 2, sm: 4, md: 4 }}
+      //pt={{ xs: 2, sm: 4, md: 4 }}
       pb={{ xs: 2, sm: 4, md: 4 }}
       sx={{ 
         position: 'relative', 
@@ -59,8 +59,8 @@ const GroceryOverview: React.FC = () => {
           mb={2}
           sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
         >
-          {t('GroceryOverview.title', 'Pantry Overview')}
-      </Typography>
+          {t('GroceryOverview.title', 'Grocery Overview')}
+        </Typography>
       )}
       <GroceryItemAddDialog open={addGroceryOpen} onClose={() => setAddGroceryOpen(false)} />
       <Box
