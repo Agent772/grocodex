@@ -25,7 +25,6 @@ const navItems = [
   { key: 'nav.shopping_lists', icon: <ListAltIcon /> },
   { key: 'nav.cookiedoo_import', icon: <ImportExportIcon /> },
   { key: 'nav.pantry_overview', icon: <KitchenIcon /> },
-  { key: 'nav.containers', icon: <ShelvesIcon /> },
 ];
 
 /**
@@ -54,7 +53,9 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ open, onClose, onSelect,
         anchor="left"
         open
         variant="permanent"
-        PaperProps={{ sx: { width: 64, pt: `${appBarHeight}px`, overflow: 'visible', boxSizing: 'border-box' } }}
+        slotProps={{
+          paper: { sx: { width: 64, pt: `${appBarHeight}px`, overflow: 'visible', boxSizing: 'border-box' } }
+        }}
       >
         <List>
           {navItems.map((item, idx) => (
@@ -68,7 +69,9 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({ open, onClose, onSelect,
   }
   return (
     <Drawer anchor="left" open={open} onClose={onClose} variant="temporary"
-      PaperProps={{ sx: { width: 240, pt: `${appBarHeight}px`, boxSizing: 'border-box' } }}>
+     slotProps={{
+      paper: { sx: { width: 240, pt: `${appBarHeight}px`, boxSizing: 'border-box' } }
+     }}>
       <Box role="presentation">
         <List>
           {navItems.map((item, idx) => (

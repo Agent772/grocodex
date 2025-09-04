@@ -7,13 +7,13 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import LocalDiningIcon from '@mui/icons-material/LocalDining';
 import Masonry from '@mui/lab/Masonry';
 import { useRxDB } from 'rxdb-hooks';
-import { ContainerDocType } from '../../types/dbCollections';
-import { ContainerCard } from '../components/containers/ContainerCard';
-import GroceryItemCard from '../components/groceryItems/GroceryItemCard';
-import AddContainerDialog from '../components/containers/ContainerNewEdit';
-import GroceryItemAddDialog from '../components/groceryItems/GroceryItemAddDialog';
+import { ContainerDocType } from '../../../types/dbCollections';
+import { ContainerCard } from './ContainerCard';
+import GroceryItemCard from '../groceryItems/GroceryItemCard';
+import AddContainerDialog from './ContainerNewEdit';
+import GroceryItemAddDialog from '../groceryItems/GroceryItemAddDialog';
 import { useTranslation } from 'react-i18next';
-import { GroceryItemDocType } from '../../types/dbCollections';
+import { GroceryItemDocType } from '../../../types/dbCollections';
 
 const ContainerOverview: React.FC = () => {
   const db = useRxDB();

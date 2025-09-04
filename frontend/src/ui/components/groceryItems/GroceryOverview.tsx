@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Typography, TextField } from '@mui/material';
-import GroceryItemAddDialog from '../components/groceryItems/GroceryItemAddDialog';
-import GroceryItemCard from '../components/groceryItems/GroceryItemCard';
+import GroceryItemAddDialog from './GroceryItemAddDialog';
+import GroceryItemCard from './GroceryItemCard';
 import Badge from '@mui/material/Badge';
 import { useRxDB } from 'rxdb-hooks';
-import { GroceryItemDocType } from '../../types/dbCollections';
+import { GroceryItemDocType } from '../../../types/dbCollections';
 import Masonry from '@mui/lab/Masonry';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 
-const PantryOverview: React.FC = () => {
+const GroceryOverview: React.FC = () => {
   const [search, setSearch] = useState('');
   const [productGroups, setProductGroups] = useState<Record<string, string>>({});
   const [products, setProducts] = useState<Record<string, string>>({});
@@ -59,7 +59,7 @@ const PantryOverview: React.FC = () => {
           mb={2}
           sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
         >
-          {t('pantryOverview.title', 'Pantry Overview')}
+          {t('GroceryOverview.title', 'Pantry Overview')}
       </Typography>
       )}
       <GroceryItemAddDialog open={addGroceryOpen} onClose={() => setAddGroceryOpen(false)} />
@@ -79,7 +79,7 @@ const PantryOverview: React.FC = () => {
         <Box sx={{ px: 2, pt: 2, pb: 1 }}>
           <TextField
             fullWidth
-            label={t('pantryOverview.searchPlaceholder', 'Search pantry items')}
+            label={t('GroceryOverview.searchPlaceholder', 'Search pantry items')}
             variant="outlined"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -111,7 +111,7 @@ const PantryOverview: React.FC = () => {
       </Box>
       <Fab
         color="primary"
-        aria-label={t('pantryOverview.aria.addGroceryItem', 'Add Grocery Item')}
+        aria-label={t('GroceryOverview.aria.addGroceryItem', 'Add Grocery Item')}
         sx={{
           position: 'fixed',
           bottom: { xs: 72, md: 32 },
@@ -125,4 +125,4 @@ const PantryOverview: React.FC = () => {
     </Box>
   )
 }
-export { PantryOverview };
+export { GroceryOverview };

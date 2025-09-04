@@ -14,6 +14,8 @@ import { GroceryItemDocType, ContainerDocType } from '../../../types/dbCollectio
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
 import { useProductSearchByBarcode } from '../../hooks/useProductSearchByBarcode';
 import { useProductSearchByName } from '../../hooks/useProductSearchByName';
+import BarcodeScannerDialog from '../BarcodeScannerDialog';
+import { isValidEAN13, isValidEAN8 } from '../../../utils/barcodeValidation';
 
 
 interface GroceryItemAddDialogProps {
@@ -87,18 +89,11 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   const { searchProduct } = useProductSearchByBarcode();
   const { searchProducts } = useProductSearchByName();
   const [productOptions, setProductOptions] = useState<any[]>([]);
+  const [barcodeTriggerLookup, setBarcodeTriggerLookup] = useState<boolean>(false);
 
   // Scan barcode handler (mock, replace with real scanner integration)
   const handleScanBarcode = async () => {
     setScanning(true);
-    // Here you would integrate QuaggaJS or zxing-js for barcode scanning
-    // For now, simulate with a prompt
-    // TODO: Implement real barcode scanning
-    const code = window.prompt('Scan or enter barcode:');
-    if (code) {
-      setBarcode(code);
-    }
-    setScanning(false);
   };
 
   // Fill all fields from a DB product or API result object
@@ -144,8 +139,11 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
   // Barcode search effect
   // Only trigger if barcode is changed by manual input, not by name selection
   useEffect(() => {
-    const isValidBarcode = barcode && barcode.length === 13 && /^\d{13}$/.test(barcode);
-    if (isValidBarcode && barcode !== lastSearchedBarcode) {
+    const isValidBarcode =
+      (isValidEAN8(barcode)) ||
+      (isValidEAN13(barcode));
+    console.log('Barcode changed:', barcode, 'Valid:', isValidBarcode, 'TriggerLookup:', barcodeTriggerLookup);
+    if (isValidBarcode && barcode !== lastSearchedBarcode && barcodeTriggerLookup) {
       (async () => {
         setLoading(true);
         try {
@@ -154,6 +152,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             await fillAllFieldsFromProduct(product, db);
           }
           setLastSearchedBarcode(barcode);
+          setBarcodeTriggerLookup(false);
         } catch (e) {
           // Optionally handle error
         }
@@ -311,7 +310,10 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             <TextField
               label={t('product.barcode', 'Barcode')}
               value={barcode}
-              onChange={e => setBarcode(e.target.value)}
+              onChange={e => {
+                setBarcode(e.target.value);
+                setBarcodeTriggerLookup(true);
+              }}
               sx={{ width: '100%' }}
             />
             {loading && barcode ? (
@@ -393,6 +395,16 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
             sx={{ mt: 2 }}
           />
         </Box>
+        {scanning && (
+          <BarcodeScannerDialog
+            open={scanning}
+            onClose={() => setScanning(false)}
+            onScan={(code) => {
+              setBarcode(code);
+              setScanning(false);
+            }}
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <IconButton onClick={handleCancel} size="small" color="inherit" aria-label="Cancel">
