@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRxDB } from 'rxdb-hooks';
-import { Fab, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, MenuItem, IconButton, Autocomplete } from '@mui/material';
+import { Fab, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, IconButton, Autocomplete, InputAdornment } from '@mui/material';
 import { ContainerBreadcrumbLabel, getContainerBreadcrumbLabel } from '../containers/ContainerBreadcrumbLabel';
 import { useContainerSearch } from '../../hooks/useContainerSearch';
-import { Save as SaveIcon, QrCodeScanner as QrCodeScannerIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Save as SaveIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
-import { UNIT_OPTIONS } from '../../../types/unitOptions';
 import { useGroceryItemActions } from '../../hooks/useGroceryItemActions';
 import { GroceryItemDocType, ContainerDocType } from '../../../types/dbCollections';
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
-import {getUnitLabel} from '../../utils/getUnitLabel'
+import { getUnitLabel } from '../../utils/getUnitLabel'
 
 interface GroceryItemEditDialogProps {
   open: boolean;
@@ -22,20 +20,21 @@ interface GroceryItemEditDialogProps {
 const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, groceryItem, onClose, onSaved }) => {
   const db = useRxDB();
   const [container, setContainer] = useState<ContainerDocType | null>(null);
+  const [productGroup, setProductGroup] = useState<ProductGroupDocType | null>(null);
   const { containers: containerOptions } = useContainerSearch();
   const { t } = useTranslation();
   const [manualFields, setManualFields] = useState({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
   const [barcode, setBarcode] = useState('');
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [productName, setProductName] = useState('');
   const { updateGroceryItem } = useGroceryItemActions();
 
   useEffect(() => {
     if (!open) {
-      setName('');
+      setProductName('');
       setBarcode('');
       setManualFields({ productBrand: '', unit: '', quantity: '', buyDate: '', expirationDate: '', notes: '' });
       setContainer(null);
+      setProductGroup(null);
     } else if (groceryItem) {
       (async () => {
         let product: ProductDocType | null = null;
@@ -43,7 +42,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
           const doc = await db.collections.product.findOne({ selector: { id: groceryItem.product_id } }).exec();
           product = doc ? doc.toJSON() as ProductDocType : null;
         }
-        setName(product?.name || '');
+        setProductName(product?.name || '');
         setBarcode(product?.barcode || '');
         setManualFields({
           productBrand: product?.brand || '',
@@ -54,6 +53,13 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
           notes: groceryItem.notes || ''
         });
         setContainer(groceryItem.container_id ? containerOptions.find(c => c.id === groceryItem.container_id) || null : null);
+        // Load product group for info
+        if (product?.product_group_id && db && db.collections.product_group) {
+          const doc = await db.collections.product_group.findOne({ selector: { id: product.product_group_id } }).exec();
+          setProductGroup(doc ? doc.toJSON() as ProductGroupDocType : null);
+        } else {
+          setProductGroup(null);
+        }
       })();
     }
   }, [open, groceryItem, containerOptions, db]);
@@ -87,8 +93,15 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={1} mt={2}>
           <TextField
-            label={t('groceryItem.name', 'Name')}
-            value={name}
+            label={t('productGroup.label', 'Product Group')}
+            value={productGroup?.name || ''}
+            fullWidth
+            disabled
+            sx={{ mb: 1 }}
+          />
+          <TextField
+            label={t('groceryItem.product', 'Product')}
+            value={productName}
             fullWidth
             autoFocus
             disabled
@@ -117,29 +130,30 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
                 htmlInput: {
                   min: 0,
                 },
+                input: {
+                  endAdornment: 
+                    <InputAdornment position="end">
+                      {manualFields.unit ? getUnitLabel(manualFields.unit, t) : ''}
+                    </InputAdornment>
+                }
               }}
-              sx={{ width: { xs: '60vw', sm: '60vw' } }}
+              sx={{ width: { xs: '40vw', sm: '45vw' } }}
             />
             <TextField
               label={t('groceryItem.quantity', 'Quantity')}
               value={groceryItem.rest_quantity ? groceryItem.rest_quantity : ''}
               fullWidth
               disabled
-              sx={{ width: { xs: '40vw', sm: '40vw' } }}
+              slotProps={{
+                input: {
+                  endAdornment: 
+                    <InputAdornment position="end">
+                      {manualFields.unit ? getUnitLabel(manualFields.unit, t) : ''}
+                    </InputAdornment>
+                }
+              }}
+              sx={{ width: { xs: '35vw', sm: '40vw' } }}
             />
-            <TextField
-              select
-              label={t('product.unit', 'Unit')}
-              value={manualFields.unit}
-              sx={{ width: { xs: '25vw', sm: '10vw' } }}
-              disabled
-            >
-              {UNIT_OPTIONS.map(opt => (
-                <MenuItem key={opt} value={opt}>
-                  {getUnitLabel(opt, t)}
-                </MenuItem>
-              ))}
-            </TextField>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
