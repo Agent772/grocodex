@@ -56,7 +56,7 @@ const GroceryOverview: React.FC = () => {
       {!isMobile && (
         <Typography
           variant="h4"
-          mb={2}
+          //mb={2}
           sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
         >
           {t('GroceryOverview.title', 'Grocery Overview')}

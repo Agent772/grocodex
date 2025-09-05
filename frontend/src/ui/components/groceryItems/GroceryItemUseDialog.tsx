@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { InputLabel, InputAdornment, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography } from '@mui/material';
+import { getUnitLabel } from '../../utils/getUnitLabel';
+import { InputLabel, InputAdornment, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography, Chip } from '@mui/material';
 import { FormControl, OutlinedInput, FormHelperText } from '@mui/material';
 import { GroceryItemDocType } from '../../../types/dbCollections';
 import { useGroceryItemDetails } from '../../hooks/useGroceryItemDetails';
@@ -34,9 +35,12 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{t('groceryItem.use.title', 'Use Item')}</DialogTitle>
       <DialogContent sx={{ minWidth: 300 }}>
-        <Typography gutterBottom>
-          {t('groceryItem.use.available', 'Available')}: {totalRestQuantity}
-        </Typography>
+        <Box display="flex" alignItems="center" gap={1} mb={1}>
+          <Typography gutterBottom>
+            {t('groceryItem.use.available', 'Available')}: {totalRestQuantity}
+          </Typography>
+          <Chip label={totalRestQuantity + (product?.unit ? ' ' + getUnitLabel(product.unit, t) : '')} size="small" />
+        </Box>
             <Box display={'flex'} alignItems={'center'} alignContent={'center'}>
               <FormControl fullWidth variant="outlined" sx={{ mt: 1 }}>
                 <InputLabel htmlFor="outlined-adornment-amount">{t('groceryItem.use.amountUsed', 'Amount Used')}</InputLabel>
@@ -46,7 +50,7 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
                   label={t('groceryItem.use.amountUsed', 'Amount Used')}
                   value={usedAmount}
                   onChange={e => setUsedAmount(Number(e.target.value))}
-                  endAdornment={<InputAdornment position="end">{product?.unit || ''}</InputAdornment>}
+                  endAdornment={<InputAdornment position="end">{product?.unit ? getUnitLabel(product.unit, t) : ''}</InputAdornment>}
                   inputProps={{
                     min: 0,
                     max: totalRestQuantity,

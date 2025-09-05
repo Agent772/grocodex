@@ -84,7 +84,7 @@ const ContainerOverview: React.FC = () => {
       {!isMobile && (
         <Typography 
           variant="h4" 
-          mb={2} 
+          // mb={2} 
           sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
           >
             {t('containerOverview.title', 'Container Overview')}
@@ -181,27 +181,29 @@ const ContainerOverview: React.FC = () => {
             }}
             >
               <Typography variant="h6" sx={{ mb: 2 }}>{t('common.containers', 'Container')}</Typography>
-              <Masonry
-                columns={{ sm: 1, md: 2 }}
-                spacing={1}
-                sx={{
-                  width: '95%',
-                  px: 2,
-                  minHeight: displayContainers.length === 0 ? 0 : undefined
-                }}
-              >
-                {showSkeletons
-                  ? [...Array(4)].map((_, idx) => (
-                      <Skeleton key={idx} variant="rectangular" height={120} sx={{ mb: 2, borderRadius: 2 }} />
-                    ))
-                  : displayContainers.map(container => (
-                      <Box key={container.id} sx={{ width: '100%', cursor: !search ? 'pointer' : 'default' }} onClick={() => {
-                        if (!search) setParentId(container.id);
-                      }}>
-                        <ContainerCard containerId={container.id} />
-                      </Box>
-                    ))}
-              </Masonry>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <Masonry
+                  columns={{ sm: 1, md: 2 }}
+                  spacing={1}
+                  sx={{
+                    width: '95%',
+                    px: 2,
+                    minHeight: displayContainers.length === 0 ? 0 : undefined
+                  }}
+                >
+                  {showSkeletons
+                    ? [...Array(4)].map((_, idx) => (
+                        <Skeleton key={idx} variant="rectangular" height={120} sx={{ mb: 2, borderRadius: 2 }} />
+                      ))
+                    : displayContainers.map(container => (
+                        <Box key={container.id} sx={{ width: '100%', cursor: !search ? 'pointer' : 'default' }} onClick={() => {
+                          if (!search) setParentId(container.id);
+                        }}>
+                          <ContainerCard containerId={container.id} />
+                        </Box>
+                      ))}
+                </Masonry>
+              </Box>
             </Box>
           )}
           {/* Groceries in current container */}

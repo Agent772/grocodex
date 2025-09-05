@@ -44,7 +44,7 @@ const ProductOverview: React.FC = () => {
       {!isMobile && (
         <Typography
           variant="h4"
-          mb={2}
+          //mb={2}
           sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
         >
           {t('productOverview.title', 'Product Overview')}
@@ -77,7 +77,9 @@ const ProductOverview: React.FC = () => {
         <Box display={'flex'} justifyContent={'center'} sx={{ paddingTop: 2 }}>
           <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
             {filteredGroups.map(group => (
-              <ProductCard key={group.id} productGroupId={group.id} />
+              <Box key={group.id} sx={{ width: '100%' }}>
+                <ProductCard productGroupId={group.id} />
+              </Box>
             ))}
           </Masonry>
         </Box>

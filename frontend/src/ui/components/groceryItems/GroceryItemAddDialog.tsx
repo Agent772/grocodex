@@ -9,6 +9,7 @@ import { findGroceryItemByProductId } from '../../hooks/useGroceryItemSearch';
 import { ArrowDropDown as ArrowDropDownIcon, Save as SaveIcon, QrCodeScanner as QrCodeScannerIcon, Close as CloseIcon, SaveAs as SaveAsIcon, LibraryAdd as LibraryAddIcon, DataSaverOn as DataSaverOnIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { UNIT_OPTIONS } from '../../../types/unitOptions';
+import { getUnitLabel } from '../../utils/getUnitLabel';
 import { useGroceryItemActions } from '../../hooks/useGroceryItemActions';
 import { GroceryItemDocType, ContainerDocType } from '../../../types/dbCollections';
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
@@ -345,7 +346,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               sx={{ width: { xs: '20vw', sm: '7vw' } }}
             >
               {UNIT_OPTIONS.map(opt => (
-                <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                <MenuItem key={opt} value={opt}>{getUnitLabel(opt, t)}</MenuItem>
               ))}
             </TextField>
           </Box>
@@ -355,7 +356,9 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               type="date"
               value={manualFields.buyDate || new Date().toISOString().slice(0, 10)}
               onChange={e => handleManualFieldChange('buyDate', e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: { shrink: true }
+              }}
               fullWidth
             />
             <TextField
@@ -363,7 +366,9 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
               type="date"
               value={manualFields.expirationDate}
               onChange={e => handleManualFieldChange('expirationDate', e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: { shrink: true }
+              }}
               fullWidth
             />
           </Box>

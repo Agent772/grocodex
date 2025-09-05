@@ -1,8 +1,8 @@
 import React from 'react';
 import GroceryItemUseDialog from './GroceryItemUseDialog';
 import GroceryItemEditDialog from './GroceryItemEditDialog';
-import { useGroceryItemUse } from './useGroceryItemUse';
-import { Card, Box, Typography, Chip, Avatar, IconButton } from '@mui/material';
+import { useGroceryItemUse } from '../../hooks/useGroceryItemUse';
+import { Card, Box, Typography, Chip, Avatar, IconButton, Collapse } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EditIcon from '@mui/icons-material/Edit';
 import { GroceryItemDocType } from '../../../types/dbCollections';
@@ -12,6 +12,7 @@ import { ContainerBreadcrumbLabel } from '../containers/ContainerBreadcrumbLabel
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useTranslation } from 'react-i18next';
+import { getUnitLabel } from '../../utils/getUnitLabel';
 
 export interface GroceryItemCardProps {
   groceryItems: GroceryItemDocType[];
@@ -120,12 +121,12 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
               ? `${totalRestQuantity}/${totalProductQuantity}`
               : totalRestQuantity ?? totalProductQuantity ?? '?'}
           </Typography>
-          <Chip label={product?.unit || ''} size="small" />
+          <Chip label={product?.unit ? getUnitLabel(product.unit, t) : ''} size="small" />
         </Box>
       </Box>
-      {/* Expanded details for multiple locations */}
-      {expanded && locationIds.length > 1 && (
-        <Box sx={{ mt: 2 }}>
+      {/* Expanded details for multiple locations with max height, scroll, and animation */}
+      <Collapse in={expanded && locationIds.length > 1} timeout="auto" unmountOnExit>
+        <Box sx={{ mt: 2, maxHeight: 220, overflowY: 'auto' }}>
           <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>{t('groceryItem.locations', 'Locations:')}</Typography>
           {locationIds.map(locId => {
             const container = getContainer(locId);
@@ -148,13 +149,13 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
                         ? `${locRestQuantity}/${locProductQuantity}`
                         : locRestQuantity ?? locProductQuantity ?? '?'}
                     </Typography>
-                    <Chip label={product?.unit || ''} size="small" sx={{ ml: 1 }} />
+                    <Chip label={product?.unit ? getUnitLabel(product.unit, t) : ''} size="small" sx={{ ml: 1 }} />
                 </Box>
               </Box>
             );
           })}
         </Box>
-      )}
+      </Collapse>
       </Card>
       <GroceryItemUseDialog
         open={useDialogOpen}
