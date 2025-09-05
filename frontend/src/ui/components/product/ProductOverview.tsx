@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, useTheme, useMediaQuery } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import { useRxDB } from 'rxdb-hooks';
-import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
+import { ProductGroupDocType } from '../../../types/dbCollections';
 import ProductCard from './ProductCard';
+import ProductGroupEditDialog from './ProductGroupEditDialog';
 import { useTranslation } from 'react-i18next';
 
 const ProductOverview: React.FC = () => {
@@ -13,6 +14,20 @@ const ProductOverview: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { t } = useTranslation();
+
+  // Dialog state for editing product group
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editGroupId, setEditGroupId] = useState<string | null>(null);
+
+  const handleEditGroup = (groupId: string) => {
+    setEditGroupId(groupId);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setEditGroupId(null);
+  };
 
   useEffect(() => {
     if (!db) return;
@@ -78,14 +93,20 @@ const ProductOverview: React.FC = () => {
           <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
             {filteredGroups.map(group => (
               <Box key={group.id} sx={{ width: '100%' }}>
-                <ProductCard productGroupId={group.id} />
+                <ProductCard productGroupId={group.id} onEditGroup={handleEditGroup} />
               </Box>
             ))}
           </Masonry>
         </Box>
       </Box>
-    </Box>
-  );
+    {/* Edit dialog for product group */}
+    <ProductGroupEditDialog
+      open={editDialogOpen}
+      productGroupId={editGroupId}
+      onClose={handleEditDialogClose}
+    />
+  </Box>
+ );
 };
 
 export { ProductOverview };
