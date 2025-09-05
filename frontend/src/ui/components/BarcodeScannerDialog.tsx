@@ -129,7 +129,6 @@ const BarcodeScannerDialog: React.FC<BarcodeScannerDialogProps> = ({ open, onClo
             <canvas className="drawingBuffer" style={{
               position: 'absolute',
               top: '0px',
-              // border: `3px solid ${theme.palette.primary.main}`,
             }}
               width={size.width}
               height={size.height}

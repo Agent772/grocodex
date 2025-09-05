@@ -6,7 +6,6 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
-import { UI_TRANSLATION_KEYS } from '../../../types/uiTranslationKeys';
 import { useContainerActions } from '../../hooks/useContainerActions';
 import { ContainerDocType } from '../../../types/dbCollections';
 import { getContainerBreadcrumbLabel } from './ContainerBreadcrumbLabel';
@@ -38,25 +37,6 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { addOrUpdateContainer } = useContainerActions();
-
-  // // Helper to build breadcrumb label for a container
-  // const getBreadcrumbLabel = (option: ContainerDocType): string => {
-  //   // Find parent recursively (assumes containerOptions includes all containers)
-  //   let label = option.name;
-  //   let current = option as ContainerDocType;
-  //   const visited = new Set();
-  //   while (current.parent_container_id && !visited.has(current.parent_container_id)) {
-  //     visited.add(current.parent_container_id);
-  //     const parentObj = containerOptions.find(c => c.id === current.parent_container_id);
-  //     if (parentObj) {
-  //       label = parentObj.name + ' > ' + label;
-  //       current = parentObj;
-  //     } else {
-  //       break;
-  //     }
-  //   }
-  //   return label;
-  // };
 
   React.useEffect(() => {
     setName(container?.name || '');

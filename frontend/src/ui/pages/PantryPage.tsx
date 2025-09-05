@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 const PantryPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const { t } = useTranslation();
-  // Responsive tabs variant
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 

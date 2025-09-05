@@ -11,7 +11,6 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import KitchenIcon from '@mui/icons-material/Kitchen';
 import Box from '@mui/material/Box';
-import ShelvesIcon from '@mui/icons-material/Shelves';
 
 export interface SideDrawerProps {
   open: boolean;

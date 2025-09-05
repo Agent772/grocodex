@@ -5,7 +5,7 @@ export function useGroceryItemUse(groceryItems: GroceryItemDocType[]) {
   const db = useRxDB();
 
   // Use the first item for updating opened state/flag
-  const mainItem = groceryItems[0];
+  // const mainItem = groceryItems[0];
 
   const useItem = async (usedAmount: number) => {
     if (!db) return;
