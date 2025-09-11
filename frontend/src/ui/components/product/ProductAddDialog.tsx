@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { compressImage, blobToBase64 } from '../../../utils/imageCompressionHelper';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -16,28 +15,26 @@ import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import CloseIcon from '@mui/icons-material/Close';
 import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
 
-type ProductGroupOption = ProductGroupDocType | { name: string; isNew: boolean };
-
-interface ProductEditDialogProps {
+interface ProductAddDialogProps {
   open: boolean;
-  product?: ProductDocType;
   onClose: () => void;
   onSaved?: () => void;
 }
 
-const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, onClose, onSaved }) => {
+const ProductAddDialog: React.FC<ProductAddDialogProps> = ({ open, onClose, onSaved }) => {
   const db = useRxDB();
   const { t } = useTranslation();
+  const { addProductGroup } = useProductGroupActions();
   const [productGroupOptions, setProductGroupOptions] = useState<ProductGroupDocType[]>([]);
   const [productGroupInput, setProductGroupInput] = useState('');
   const [productGroup, setProductGroup] = useState<ProductGroupDocType | null>(null);
-  const [productName, setProductName] = useState(product?.name || '');
-  const [barcode, setBarcode] = useState(product?.barcode || '');
-  const [unit, setUnit] = useState(product?.unit || 'g');
-  const [quantity, setQuantity] = useState(product?.quantity ? String(product.quantity) : '');
-  const [brand, setBrand] = useState(product?.brand || '');
-  const [imageUrl, setImageUrl] = useState(product?.image_url || '');
-  const [imagePreview, setImagePreview] = useState<string | undefined>(product?.image_url);
+  const [productName, setProductName] = useState('');
+  const [barcode, setBarcode] = useState('');
+  const [unit, setUnit] = useState('g');
+  const [quantity, setQuantity] = useState('');
+  const [brand, setBrand] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [imageBlob, setImageBlob] = useState<Blob | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -56,27 +53,6 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
     })();
   }, [db]);
 
-  useEffect(() => {
-    if (product) {
-      setProductName(product.name || '');
-      setBarcode(product.barcode || '');
-      setUnit(product.unit || 'g');
-      setQuantity(product.quantity ? String(product.quantity) : '');
-      setBrand(product.brand || '');
-      setImageUrl(product.image_url || '');
-      setImagePreview(product.image_url);
-      setImageBlob(undefined);
-      // Set product group
-      if (product.product_group_id && productGroupOptions.length > 0) {
-        const foundGroup = productGroupOptions.find(pg => pg.id === product.product_group_id);
-        if (foundGroup) {
-          setProductGroup(foundGroup);
-          setProductGroupInput(foundGroup.name);
-        }
-      }
-    }
-  }, [product, productGroupOptions]);
-
   // Product group autocomplete logic
   useEffect(() => {
     if (!productGroupInput || productGroupInput.length < 1) return;
@@ -90,27 +66,32 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
   const handleScanBarcode = () => setScanning(true);
 
   const handleSave = async () => {
-    // Find or create product group
     let group = productGroup;
-    if (!group && productGroupInput) {
-      // Try to find by name
-      group = productGroupOptions.find(pg => pg.name === productGroupInput) || null;
+    let groupName = productGroupInput;
+    let groupBrand = brand;
+    // If no productGroupInput but productName, use productName as group name
+    if (!groupName && productName) {
+      groupName = productName;
+      groupBrand = brand || productName;
+    }
+    // Find or create product group
+    if (!group && groupName) {
+      group = productGroupOptions.find(pg => pg.name === groupName) || null;
       if (!group) {
-        // Create new group
-        const { addProductGroup } = useProductGroupActions();
         group = await addProductGroup({
           id: crypto.randomUUID(),
-          name: productGroupInput,
-          brand,
+          name: groupName,
+          brand: groupBrand,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
       }
     }
     if (!group) return;
-    // Update product
-    if (db && product) {
-      await db.collections.product.atomicPatch(product.id, {
+    // Create product
+    if (db) {
+      await db.collections.product.insert({
+        id: crypto.randomUUID(),
         name: productName,
         barcode,
         unit,
@@ -118,6 +99,7 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
         brand,
         image_url: imagePreview || imageUrl,
         product_group_id: group.id,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
       if (onSaved) onSaved();
@@ -127,13 +109,13 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('product.edit.title', 'Edit Product')}</DialogTitle>
+      <DialogTitle>{t('product.add.title', 'Add Product')}</DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={2} mt={2}>
           <Autocomplete
             freeSolo
-            options={productGroupOptions as (string | ProductGroupOption)[]}
-            filterOptions={(options: (string | ProductGroupOption)[], { inputValue }) => {
+            options={productGroupOptions as any[]}
+            filterOptions={(options: any[], { inputValue }) => {
               const filtered = options.filter((option) => {
                 if (typeof option === 'string') {
                   return option.toLowerCase().includes(inputValue.toLowerCase());
@@ -153,7 +135,7 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
               }
               return filtered;
             }}
-            getOptionLabel={(option: string | ProductGroupOption) => {
+            getOptionLabel={(option: string | any) => {
               if (typeof option === 'string') return option;
               return 'name' in option ? option.name : '';
             }}
@@ -225,50 +207,50 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
             fullWidth
           />
           {/* Image upload UI from ContainerNewEdit */}
-            <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
+          <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
             {/* Image upload buttons or preview */}
             {!imagePreview ? (
               <Box display="flex" gap={1} justifyContent="center" alignItems="center">
-              <IconButton color="secondary" component="span" onClick={() => fileInputRef.current?.click()}>
-                <FileUploadIcon/>
-              </IconButton>
-              <IconButton color="secondary" component="span" onClick={() => cameraInputRef.current?.click()}>
-                <PhotoCameraIcon/>
-              </IconButton>
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const compressed = await compressImage(file, { maxWidthOrHeight: 800, maxSizeMB: 0.2 });
-                  setImageBlob(compressed);
-                  const base64 = await blobToBase64(compressed);
-                  setImagePreview(base64);
-                }
-                }}
-              />
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                ref={cameraInputRef}
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const compressed = await compressImage(file, { maxWidthOrHeight: 800, maxSizeMB: 0.2 });
-                  setImageBlob(compressed);
-                  const base64 = await blobToBase64(compressed);
-                  setImagePreview(base64);
-                }
-                }}
-              />
+                <IconButton color="secondary" component="span" onClick={() => fileInputRef.current?.click()}>
+                  <FileUploadIcon/>
+                </IconButton>
+                <IconButton color="secondary" component="span" onClick={() => cameraInputRef.current?.click()}>
+                  <PhotoCameraIcon/>
+                </IconButton>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const compressed = await compressImage(file, { maxWidthOrHeight: 800, maxSizeMB: 0.2 });
+                      setImageBlob(compressed);
+                      const base64 = await blobToBase64(compressed);
+                      setImagePreview(base64);
+                    }
+                  }}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  ref={cameraInputRef}
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const compressed = await compressImage(file, { maxWidthOrHeight: 800, maxSizeMB: 0.2 });
+                      setImageBlob(compressed);
+                      const base64 = await blobToBase64(compressed);
+                      setImagePreview(base64);
+                    }
+                  }}
+                />
               </Box>
             ) : undefined}
-            </Box>
+          </Box>
           <Box>
             {imagePreview ? (
               <Box position="relative" ml={2} display="flex" justifyContent="center" alignItems="center" width="100%">
@@ -291,7 +273,7 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
                   </IconButton>
                 </Box>
               </Box>
-          ) : undefined}
+            ) : undefined}
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <TextField
@@ -334,12 +316,12 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
           onClick={handleSave}
           size="small"
           disabled={!productName.trim() || !unit.trim() || !quantity.trim()}
-          >
-            <SaveIcon />
+        >
+          <SaveIcon />
         </Fab>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default ProductEditDialog;
+export default ProductAddDialog;

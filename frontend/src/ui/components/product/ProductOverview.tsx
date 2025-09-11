@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, TextField, useTheme, useMediaQuery, Fab } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
+import AddIcon from '@mui/icons-material/Add';
 import { useRxDB } from 'rxdb-hooks';
 import { ProductGroupDocType } from '../../../types/dbCollections';
 import ProductCard from './ProductCard';
 import ProductGroupEditDialog from './ProductGroupEditDialog';
 import ProductEditDialog from './ProductEditDialog';
 import { useTranslation } from 'react-i18next';
+import ProductAddDialog from './ProductAddDialog';
 
 const ProductOverview: React.FC = () => {
   // Expanded state for product groups
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [editProductDialogOpen, setEditProductDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<any | null>(null);
+
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const handleEditProduct = async (productId: string) => {
     if (!db) return;
@@ -64,7 +68,6 @@ const ProductOverview: React.FC = () => {
       display="flex"
       flexDirection="column"
       alignItems="center"
-      //pt={{ xs: 2, sm: 4, md: 4 }}
       pb={{ xs: 2, sm: 4, md: 4 }}
       sx={{ 
         position: 'relative', 
@@ -141,6 +144,26 @@ const ProductOverview: React.FC = () => {
         />
       </React.Suspense>
     )}
+    {/* Add dialog for product/product group */}
+    {addDialogOpen && (
+      <ProductAddDialog
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+      />
+    )}
+    <Fab
+        color="primary"
+        aria-label={t('ProductOverview.aria.addProduct', 'Add Product')}
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 72, md: 32 },
+          right: 32,
+          zIndex: 1000
+        }}
+        onClick={() => setAddDialogOpen(true)}
+      >
+        <AddIcon />
+      </Fab>
   </Box>
  );
 };
