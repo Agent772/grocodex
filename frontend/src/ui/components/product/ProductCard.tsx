@@ -9,13 +9,16 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 export interface ProductCardProps {
   productGroupId: string;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   onEditGroup?: (groupId: string) => void;
+  onEditProduct?: (productId: string) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, onEditGroup }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, expanded, onToggleExpanded, onEditGroup, onEditProduct }) => {
   const { productGroup, products, loading, error } = useProductGroupDetails(productGroupId);
   const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
+  // expanded and onToggleExpanded are now props from parent
 
   if (loading) return <Box sx={{ p: 2, textAlign: 'center' }}><CircularProgress size={24} /></Box>;
   if (error || !productGroup) return <Box sx={{ p: 2, color: 'error.main' }}>{t('productCard.error', 'Error loading product group')}</Box>;
@@ -25,9 +28,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, onEditGroup }
   const visibleProducts = expanded ? products.slice(0, maxVisible) : [];
   const hasMore = products.length > maxVisible;
 
+  // Handler for editing a product (calls parent handler)
+  const handleEditProduct = (productId: string) => {
+    if (typeof onEditProduct === 'function') onEditProduct(productId);
+  };
+
   return (
     <Card
-      sx={{ position: 'relative', display: 'flex', flexDirection: 'column', p: 2, borderRadius: 2, boxShadow: 2, width: '100%', cursor: 'pointer' }}
+      sx={{ position: 'relative', display: 'flex', flexDirection: 'column', p: 2, borderRadius: 2, boxShadow: 2,  cursor: 'pointer' }}
     >
       {/* Edit button at top right */}
       {onEditGroup && (
@@ -48,12 +56,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, onEditGroup }
       {products.length > 0 ? (
         <Box
           sx={{ display: 'flex', alignItems: 'center', mt: 1, cursor: 'pointer', userSelect: 'none' }}
-          onClick={e => { e.stopPropagation(); setExpanded(exp => !exp); }}
+          onClick={e => { e.stopPropagation(); onToggleExpanded(); }}
           aria-label={t('productCard.aria.showProducts', 'Show products')}
         >
           <IconButton
             size="small"
-            onClick={e => { e.stopPropagation(); setExpanded(exp => !exp); }}
+            onClick={e => { e.stopPropagation(); onToggleExpanded(); }}
             aria-label={t('productCard.aria.showProducts', 'Show products')}
             sx={{ p: 0, mr: 1 }}
           >
@@ -64,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, onEditGroup }
             color="text.secondary"
             sx={{ flexGrow: 1, textAlign: 'left' }}
           >
-            {t('productCard.products', 'Products:')}
+            {t('productCard.associated_products', 'Products:')}
           </Typography>
           <Chip label={products.length} size="small" sx={{ ml: 1 }} />
         </Box>
@@ -91,6 +99,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, onEditGroup }
                   <Chip label={product.unit ? getUnitLabel(product.unit, t) : ''} size="small" sx={{ ml: 1, height: 22, fontSize: '0.8rem', p: 0 }} />
                 </Box>
               )}
+              {/* Edit product button */}
+              <IconButton
+                aria-label={t('productCard.aria.editProduct', 'Edit product')}
+                size="small"
+                sx={{ ml: 1 }}
+                onClick={e => { e.stopPropagation(); handleEditProduct(product.id); }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
             </ListItem>
           ))}
           {hasMore && (
@@ -101,7 +118,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, onEditGroup }
             </ListItem>
           )}
         </List>
-        </Box>
+      </Box>
       </Collapse>
     </Card>
   );

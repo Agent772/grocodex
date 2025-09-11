@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getUnitLabel } from '../../utils/getUnitLabel';
-import { InputLabel, InputAdornment, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography, Chip } from '@mui/material';
-import { FormControl, OutlinedInput, FormHelperText } from '@mui/material';
+import { InputLabel, InputAdornment, Box, FormControl, Dialog, OutlinedInput, DialogTitle, DialogContent, DialogActions, Button, Fab, IconButton, Typography, Chip } from '@mui/material';
 import { GroceryItemDocType } from '../../../types/dbCollections';
 import { useGroceryItemDetails } from '../../hooks/useGroceryItemDetails';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 
 export interface GroceryItemUseDialogProps {
   open: boolean;
@@ -73,10 +74,18 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
             </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCancel}>{t('common.cancel', 'Cancel')}</Button>
-        <Button onClick={handleSave} variant="contained" color="primary" disabled={usedAmount <= 0 || usedAmount > totalRestQuantity}>
-          {t('common.save', 'Save')}
-        </Button>
+        <IconButton onClick={handleCancel} size="small" color="inherit" aria-label={t('aria.cancel', 'Cancel')}>
+          <CloseIcon />
+        </IconButton>
+        <Fab
+          color="primary"
+          aria-label={t('aria.save', 'Save')}
+          onClick={handleSave}
+          size="small"
+          disabled={!usedAmount}
+          >
+            <SaveIcon />
+        </Fab>
       </DialogActions>
     </Dialog>
   );

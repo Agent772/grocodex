@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, CircularProgress, Box } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Fab, IconButton, CircularProgress, Box } from '@mui/material';
 import { useRxDB } from 'rxdb-hooks';
 import { useTranslation } from 'react-i18next';
 import { ProductGroupDocType } from '../../../types/dbCollections';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface ProductGroupEditDialogProps {
   open: boolean;
@@ -93,10 +95,18 @@ const ProductGroupEditDialog: React.FC<ProductGroupEditDialogProps> = ({ open, p
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={saving}>{t('common.cancel', 'Cancel')}</Button>
-        <Button onClick={handleSave} disabled={saving || loading || !!error} variant="contained" color="primary">
-          {saving ? <CircularProgress size={18} /> : t('common.save', 'Save')}
-        </Button>
+        <IconButton onClick={onClose} size="small" color="inherit" aria-label={t('aria.cancel', 'Cancel')}>
+          <CloseIcon />
+        </IconButton>
+        <Fab
+          color="primary"
+          aria-label={t('aria.save', 'Save')}
+          onClick={handleSave}
+          size="small"
+          disabled={!name.trim() || !brand.trim()}
+          >
+            <SaveIcon />
+        </Fab>
       </DialogActions>
     </Dialog>
   );

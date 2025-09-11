@@ -544,7 +544,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
         )}
       </DialogContent>
       <DialogActions>
-        <IconButton onClick={handleCancel} size="small" color="inherit" aria-label="Cancel">
+        <IconButton onClick={handleCancel} size="small" color="inherit" aria-label={t('aria.cancel', 'Cancel')}>
           <CloseIcon />
         </IconButton>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

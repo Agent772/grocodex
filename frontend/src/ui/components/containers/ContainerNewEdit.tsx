@@ -1,8 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { useTheme, useMediaQuery } from '@mui/material';
 import { compressImage, blobToBase64 } from '../../../utils/imageCompressionHelper';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Autocomplete, IconButton, Tooltip } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Fab, TextField, Box, Autocomplete, IconButton, Tooltip } from '@mui/material';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTranslation } from 'react-i18next';
@@ -66,7 +68,7 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
     let photo_url = imagePreview;
     // Build container entity
@@ -219,11 +221,18 @@ const AddContainerDialog: React.FC<AddContainerDialogProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color='inherit'>{t('common.cancel', 'Cancel')}</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary" disabled={!name.trim()}>
-            {container ? t('common.save', 'Save') : t('common.add', 'Add')}
-          </Button>
-        </DialogActions>
+        <IconButton onClick={onClose} size="small" color="inherit" aria-label={t('aria.cancel', 'Cancel')}>
+          <CloseIcon />
+        </IconButton>
+        <Fab
+          color="primary"
+          aria-label={t('aria.save', 'Save')}
+          onClick={handleSave}
+          size="small"
+          >
+            <SaveIcon />
+        </Fab>
+      </DialogActions>
       </Box>
     </Dialog>
   );

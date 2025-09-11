@@ -5,9 +5,28 @@ import { useRxDB } from 'rxdb-hooks';
 import { ProductGroupDocType } from '../../../types/dbCollections';
 import ProductCard from './ProductCard';
 import ProductGroupEditDialog from './ProductGroupEditDialog';
+import ProductEditDialog from './ProductEditDialog';
 import { useTranslation } from 'react-i18next';
 
 const ProductOverview: React.FC = () => {
+  // Expanded state for product groups
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [editProductDialogOpen, setEditProductDialogOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState<any | null>(null);
+
+  const handleEditProduct = async (productId: string) => {
+    if (!db) return;
+    const product = await db.collections.product.findOne(productId).exec();
+    if (product) {
+      setEditProduct(product.toJSON());
+      setEditProductDialogOpen(true);
+    }
+  };
+
+  const handleEditProductDialogClose = () => {
+    setEditProductDialogOpen(false);
+    setEditProduct(null);
+  };
   const db = useRxDB();
   const [search, setSearch] = useState('');
   const [productGroups, setProductGroups] = useState<ProductGroupDocType[]>([]);
@@ -15,7 +34,6 @@ const ProductOverview: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { t } = useTranslation();
 
-  // Dialog state for editing product group
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
 
@@ -37,13 +55,12 @@ const ProductOverview: React.FC = () => {
     return () => sub.unsubscribe();
   }, [db]);
 
-  // Filter product groups by search
   const filteredGroups = productGroups.filter(group =>
     group.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <Box 
+  <Box 
       display="flex"
       flexDirection="column"
       alignItems="center"
@@ -59,13 +76,11 @@ const ProductOverview: React.FC = () => {
       {!isMobile && (
         <Typography
           variant="h4"
-          //mb={2}
           sx={{ width: '100%', maxWidth: { xs: '100%', md: 900 }, textAlign: 'center' }}
         >
           {t('productOverview.title', 'Product Overview')}
         </Typography>
       )}
-      {/* <GroceryItemAddDialog open={addGroceryOpen} onClose={() => setAddGroceryOpen(false)} /> */}
       <Box
         sx={{
           width: '100%',
@@ -92,9 +107,19 @@ const ProductOverview: React.FC = () => {
         <Box display={'flex'} justifyContent={'center'} sx={{ paddingTop: 2 }}>
           <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
             {filteredGroups.map(group => (
-              <Box key={group.id} sx={{ width: '100%' }}>
-                <ProductCard productGroupId={group.id} onEditGroup={handleEditGroup} />
-              </Box>
+              <ProductCard
+                key={group.id + '-' + (expandedGroups[group.id] ? 'expanded' : 'collapsed')}
+                productGroupId={group.id}
+                expanded={!!expandedGroups[group.id]}
+                onToggleExpanded={() =>
+                  setExpandedGroups(prev => ({
+                    ...prev,
+                    [group.id]: !prev[group.id]
+                  }))
+                }
+                onEditGroup={handleEditGroup}
+                onEditProduct={handleEditProduct}
+              />
             ))}
           </Masonry>
         </Box>
@@ -105,6 +130,17 @@ const ProductOverview: React.FC = () => {
       productGroupId={editGroupId}
       onClose={handleEditDialogClose}
     />
+    {/* Edit dialog for product */}
+    {editProductDialogOpen && (
+      <React.Suspense fallback={null}>
+        {/* @ts-ignore */}
+        <ProductEditDialog
+          open={editProductDialogOpen}
+          product={editProduct}
+          onClose={handleEditProductDialogClose}
+        />
+      </React.Suspense>
+    )}
   </Box>
  );
 };
