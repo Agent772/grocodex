@@ -169,8 +169,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
       {editItem && (
         <GroceryItemEditDialog
           open={editOpen}
-          groceryItems={groceryItems}
-          initialIndex={groceryItems.findIndex(i => i.id === editItem.id)}
+          groceryItem={editItem}
           onClose={handleEditClose}
         />
       )}
