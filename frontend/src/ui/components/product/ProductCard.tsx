@@ -85,7 +85,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ productGroupId, expanded, onT
       )}
       {/* Expandable product list with max height and scroll */}
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-      <Box sx={{ mt: 2, maxHeight: 220, overflowY: 'auto' }}>
+      <Box sx={{ mt: 0, maxHeight: 220, overflowY: 'auto' }}>
         <List sx={{ p: 0 }}>
           {visibleProducts.map(product => (
             <ListItem key={product.id} sx={{ py: 0.25, minHeight: 28, alignItems: 'center' }}>

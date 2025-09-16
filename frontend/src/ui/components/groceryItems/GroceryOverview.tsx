@@ -11,6 +11,7 @@ import Masonry from '@mui/lab/Masonry';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
+import { RxDocument } from 'rxdb';
 
 const GroceryOverview: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -25,7 +26,7 @@ const GroceryOverview: React.FC = () => {
 
   useEffect(() => {
     if (!db) return;
-    const sub = db.collections.grocery_item.find().$.subscribe(docs => {
+    const sub = db.collections.grocery_item.find().$.subscribe((docs: RxDocument<GroceryItemDocType>[]) => {
       setGroceryItems(docs.map(doc => doc.toJSON()));
     });
     // fetch product groups and products for search

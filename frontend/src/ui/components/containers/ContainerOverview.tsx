@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Skeleton, Breadcrumbs, useTheme, Link, useMediaQuery } from '@mui/material';
+import { RxDocument } from 'rxdb';
+import { Box, Typography, TextField, Skeleton, Breadcrumbs, useTheme, Link, useMediaQuery, Badge } from '@mui/material';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -30,12 +31,12 @@ const ContainerOverview: React.FC = () => {
 
   useEffect(() => {
     if (!db) return;
-    const sub = db.collections.container.find().$.subscribe(docs => {
+    const sub = db.collections.container.find().$.subscribe((docs: RxDocument<ContainerDocType>[]) => {
       setContainers(docs.map(doc => doc.toJSON()));
     });
     let grocerySub: any;
     if (db.collections.grocery_item) {
-      grocerySub = db.collections.grocery_item.find().$.subscribe(docs => {
+      grocerySub = db.collections.grocery_item.find().$.subscribe((docs: RxDocument<GroceryItemDocType>[]) => {
         setGroceryItems(docs.map(doc => doc.toJSON()));
       });
     }
@@ -170,7 +171,7 @@ const ContainerOverview: React.FC = () => {
         {displayContainers.length > 0 && (
         <Box
           sx={{
-            paddingTop: displayContainers.length === 0 ? 0 : 2,
+            // paddingTop: displayContainers.length === 0 ? 0 : 2,
             width: '100%',
             minHeight: displayContainers.length === 0 ? 0 : undefined,
             maxWidth: { xs: '100%', md: '95%' },
@@ -178,7 +179,7 @@ const ContainerOverview: React.FC = () => {
           }}
           >
             <Typography variant="h6" sx={{ mb: 2 }}>{t('common.containers', 'Container')}</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <Masonry
                 columns={{ sm: 1, md: 2 }}
                 spacing={1}
@@ -207,18 +208,22 @@ const ContainerOverview: React.FC = () => {
         {parentContainer && groceriesInContainer.length > 0 && (
           <Box sx={{ width: '100%', maxWidth: { xs: '100%', md: '95%' }, mt: 1 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>{t('common.groceries', 'Groceries')}</Typography>
-            <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
-              {/* Group groceries by product_id for GroceryItemCard */}
-              {Object.values(
-                groceriesInContainer.reduce((acc, item) => {
-                  if (!acc[item.product_id]) acc[item.product_id] = [] as GroceryItemDocType[];
-                  acc[item.product_id].push(item);
-                  return acc;
-                }, {} as Record<string, GroceryItemDocType[]>)
-              ).map((items, idx) => (
-                <GroceryItemCard key={items[0].id || idx} groceryItems={items} />
-              ))}
-            </Masonry>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
+                {/* Group groceries by product_id for GroceryItemCard */}
+                {Object.values(
+                  groceriesInContainer.reduce((acc, item) => {
+                    if (!acc[item.product_id]) acc[item.product_id] = [] as GroceryItemDocType[];
+                    acc[item.product_id].push(item);
+                    return acc;
+                  }, {} as Record<string, GroceryItemDocType[]>)
+                ).map((items, idx) => (
+                  <Badge key={items[0].id || idx} badgeContent={items.length > 1 ? items.length : undefined} color="primary" sx={{ width: '100%' }}>
+                    <GroceryItemCard groceryItems={items} />
+                  </Badge>
+                ))}
+              </Masonry>
+            </Box>
           </Box>
         )}
       </Box>

@@ -61,7 +61,7 @@ function AppContent() {
           </>
         )}
         {isMobile && <BottomNav value={nav} onChange={(_, v) => setNav(v)} />}
-        <Box sx={{ mt: 10, px: { xs: 2, md: 4 } }}>
+        <Box sx={{ mt: { xs: 7, md: 8 }, px: { xs: 2, md: 4 } }}>
           {content}
         </Box>
     </I18nextProvider>

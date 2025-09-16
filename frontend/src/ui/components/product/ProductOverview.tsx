@@ -9,6 +9,7 @@ import ProductGroupEditDialog from './ProductGroupEditDialog';
 import ProductEditDialog from './ProductEditDialog';
 import { useTranslation } from 'react-i18next';
 import ProductAddDialog from './ProductAddDialog';
+import { RxDocument } from 'rxdb';
 
 const ProductOverview: React.FC = () => {
   // Expanded state for product groups
@@ -53,7 +54,7 @@ const ProductOverview: React.FC = () => {
 
   useEffect(() => {
     if (!db) return;
-    const sub = db.collections.product_group.find().$.subscribe(docs => {
+    const sub = db.collections.product_group.find().$.subscribe((docs: RxDocument<ProductGroupDocType>[])=> {
       setProductGroups(docs.map(doc => doc.toJSON()));
     });
     return () => sub.unsubscribe();
@@ -108,7 +109,7 @@ const ProductOverview: React.FC = () => {
           />
         </Box>
         <Box display={'flex'} justifyContent={'center'} sx={{ paddingTop: 2 }}>
-          <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
+          <Masonry columns={{ xs: 1, sm: 1, md: 2, lg: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
             {filteredGroups.map(group => (
               <ProductCard
                 key={group.id + '-' + (expandedGroups[group.id] ? 'expanded' : 'collapsed')}

@@ -23,7 +23,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = (props) => {
   const theme = useTheme();
   return (
     <AppBar position="fixed" color="default" elevation={1} sx={{ zIndex: theme.zIndex.drawer + 1 }}>
-      <Toolbar sx={{ minHeight: 56, px: 2 }}>
+      <Toolbar sx={{ height: { xs: 56, sm: 56, md: 64 }, px: 2 }}>
         <Box display="flex" alignItems="center" flex={1}>
           <img
             src="/logo.svg"
