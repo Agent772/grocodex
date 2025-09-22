@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, RefObject } from 'react';
-import Quagga from '@ericblade/quagga2';
+import Quagga from '@ericblade/quagga2/dist/quagga';
 import { useTheme } from '@mui/material/styles';
 import { isValidEAN8, isValidEAN13 } from './barcodeValidation';
 

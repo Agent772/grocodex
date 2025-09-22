@@ -1,6 +1,6 @@
 import React from 'react';
 import GroceryItemUseDialog from './GroceryItemUseDialog';
-import GroceryItemEditDialog from './GroceryItemEditDialog';
+import GroceryItemEditSwiperDialog from './GroceryItemEditSwiperDialog';
 import { useGroceryItemUse } from '../../hooks/useGroceryItemUse';
 import { Card, Box, Typography, Chip, Avatar, IconButton, Collapse } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -22,7 +22,6 @@ export interface GroceryItemCardProps {
 const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   const [useDialogOpen, setUseDialogOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
-  const [editItem, setEditItem] = React.useState<GroceryItemDocType | null>(null);
   const { useItem } = useGroceryItemUse(groceryItems);
   if (!groceryItems || groceryItems.length === 0) return null;
   const [expanded, setExpanded] = React.useState(false);
@@ -50,15 +49,6 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   // Check if all items share the same location
   const allSameLocation = groceryItems.every(item => item.container_id === mainItem.container_id);
 
-  const handleEditClick = (item: GroceryItemDocType) => {
-    setEditItem(item);
-    setEditOpen(true);
-  };
-  const handleEditClose = () => {
-    setEditOpen(false);
-    setEditItem(null);
-  };
-
   return (
     <>
       <Card
@@ -72,7 +62,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
         sx={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
         onClick={e => {
           e.stopPropagation();
-          handleEditClick(Array.isArray(groceryItems) ? groceryItems[0] : groceryItems);
+          setEditOpen(true);
         }}
       >
         <EditIcon />
@@ -166,13 +156,11 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
           setUseDialogOpen(false);
         }}
       />
-      {editItem && (
-        <GroceryItemEditDialog
-          open={editOpen}
-          groceryItem={editItem}
-          onClose={handleEditClose}
-        />
-      )}
+      <GroceryItemEditSwiperDialog
+        open={editOpen}
+        groceryItems={groceryItems}
+        onClose={() => setEditOpen(false)}
+      />
     </>
   );
 };

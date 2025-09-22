@@ -15,9 +15,16 @@ interface GroceryItemEditDialogProps {
   groceryItem: GroceryItemDocType;
   onClose: () => void;
   onSaved?: () => void;
+  renderInDialog?: boolean;
 }
 
-const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, groceryItem, onClose, onSaved }) => {
+const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ 
+  open, 
+  groceryItem, 
+  onClose, 
+  onSaved,
+  renderInDialog = true 
+}) => {
   const db = useRxDB();
   const [container, setContainer] = useState<ContainerDocType | null>(null);
   const [productGroup, setProductGroup] = useState<ProductGroupDocType | null>(null);
@@ -87,8 +94,8 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
     onClose();
   };
 
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+  const DialogContents = () => (
+    <>
       <DialogTitle>{t('groceryItem.edit.title', 'Edit Grocery Item')}</DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={1} mt={2}>
@@ -223,7 +230,15 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ open, gro
           <SaveIcon />
         </Fab>
       </DialogActions>
+    </>
+  );
+
+  return renderInDialog ? (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogContents />
     </Dialog>
+  ) : (
+    <DialogContents />
   );
 };
 
