@@ -14,7 +14,7 @@ const ThemeSwitcher: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div style={{ position: 'fixed', top: 8, right: 8, zIndex: 9999 }}>
+      <div style={{ position: 'fixed', top: 8, right: 8, zIndex: theme.zIndex.drawer + 1 }}>
         <IconButton onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')} color="inherit" size="large">
           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>

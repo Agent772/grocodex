@@ -16,6 +16,7 @@ interface GroceryItemEditDialogProps {
   onClose: () => void;
   onSaved?: () => void;
   renderInDialog?: boolean;
+  hideHeader?: boolean;
 }
 
 const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ 
@@ -23,7 +24,8 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
   groceryItem, 
   onClose, 
   onSaved,
-  renderInDialog = true 
+  renderInDialog = true,
+  hideHeader = false
 }) => {
   const db = useRxDB();
   const [container, setContainer] = useState<ContainerDocType | null>(null);
@@ -96,7 +98,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
 
   const DialogContents = () => (
     <>
-      <DialogTitle>{t('groceryItem.edit.title', 'Edit Grocery Item')}</DialogTitle>
+      {!hideHeader && <DialogTitle>{t('groceryItem.edit.title', 'Edit Grocery Item')}</DialogTitle>}
       <DialogContent sx={{ pb: 1 }}>
         <Box display="flex" flexDirection="column" gap={1} mt={2}>
           <TextField
