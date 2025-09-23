@@ -1,0 +1,114 @@
+{
+  "aria": {
+    "amountUsed": "Amount Used",
+    "breadcrumb": "Breadcrumb",
+    "cancel": "Cancel",
+    "deleteImage": "Delete Image",
+    "edit": "Edit",
+    "save": "Save",
+    "themeToggle": "Toggle dark and light mode"
+  },
+  "common": {
+    "add": "Add",
+    "cancel": "Cancel",
+    "containers": "Containers",
+    "groceries": "Groceries",
+    "save": "Save"
+  },
+  "container": {
+    "add": {
+      "subTitle": "Add Sub-Container",
+      "title": "Add New Container"
+    },
+    "breadcrumb": {
+      "separator": ">"
+    },
+    "edit": {
+      "title": "Edit Container"
+    },
+    "inside": {
+      "containers": "Containers inside:",
+      "groceryItems": "GroceryItems inside:"
+    },
+    "name": "Container Name",
+    "parent": "Parent Container",
+    "tooltip": {
+      "takePhoto": "Take Photo",
+      "uploadImage": "Upload Image"
+    },
+    "uiColor": "Container UI Color"
+  },
+  "containerOverview": {
+    "actions": {
+      "addContainer": "Add Container",
+      "addGroceryItem": "Add Grocery Item",
+      "addSubContainer": "Add Sub-Container"
+    },
+    "aria": {
+      "speedDialLabel": "Container actions"
+    },
+    "breadcrumb": {
+      "root": ""
+    },
+    "searchLabel": "",
+    "title": "Container Overview"
+  },
+  "groceryCard": {
+    "aria": {
+      "showLocations": "Show locations"
+    },
+    "expandToShowLocations": "Expand to show locations",
+    "unknownLocation": "Unknown Location",
+    "unknownProduct": "Unknown Product"
+  },
+  "groceryItem": {
+    "add": {
+      "product_name": "Name",
+      "save_action": "Select Save Action",
+      "save_add_next": "Save & Add Next",
+      "save_add_same": "Save & Add Same",
+      "save_close": "Save & Close",
+      "save_scan": "Save & Scan",
+      "title": "Add Grocery Item"
+    },
+    "buyDate": "Buy Date",
+    "container": "Container / Location",
+    "edit": {
+      "title": "Edit Grocery Item"
+    },
+    "expirationDate": "Expiration Date",
+    "locations": "Locations:",
+    "name": "Name",
+    "notes": "Notes",
+    "quantity": "Quantity",
+    "remainingQuantity": "Remaining Quantity",
+    "use": {
+      "amountUsed": "Amount Used",
+      "available": "Available",
+      "title": "Use Item",
+      "useAll": "All"
+    }
+  },
+  "loading": {
+    "database": "Loading database..."
+  },
+  "nav": {
+    "containers": "Containers",
+    "cookiedoo_import": "CookieDoo Import",
+    "groceries": "Groceries",
+    "shopping_lists": "Shopping Lists"
+  },
+  "pantryOverview": {
+    "aria": {
+      "addGroceryItem": "Add Grocery Item"
+    },
+    "searchPlaceholder": "Search pantry items",
+    "title": "Pantry Overview"
+  },
+  "product": {
+    "barcode": "Barcode",
+    "brand": "Brand",
+    "quantity": "Quantity",
+    "unit": "Unit"
+  }
+}
