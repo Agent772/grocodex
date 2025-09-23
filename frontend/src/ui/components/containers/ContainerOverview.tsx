@@ -185,7 +185,7 @@ const ContainerOverview: React.FC = () => {
                 spacing={1}
                 sx={{
                   width: '95%',
-                  px: 2,
+                  //px: 2,
                   minHeight: displayContainers.length === 0 ? 0 : undefined
                 }}
               >
