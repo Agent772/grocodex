@@ -1,6 +1,6 @@
 import React from 'react';
 import GroceryItemUseDialog from './GroceryItemUseDialog';
-import GroceryItemEditSwiperDialog from './GroceryItemEditSwiperDialog';
+import GroceryItemEditDialog from './GroceryItemEditDialog';
 import { useGroceryItemUse } from '../../hooks/useGroceryItemUse';
 import { Card, Box, Typography, Chip, Avatar, IconButton, Collapse } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -156,7 +156,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
           setUseDialogOpen(false);
         }}
       />
-      <GroceryItemEditSwiperDialog
+      <GroceryItemEditDialog
         open={editOpen}
         groceryItems={groceryItems}
         onClose={() => setEditOpen(false)}
