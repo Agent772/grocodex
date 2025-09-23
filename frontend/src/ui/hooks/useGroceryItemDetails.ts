@@ -17,7 +17,12 @@ export function useGroceryItemDetails(groceryItem: GroceryItemDocType) {
     let cancelled = false;
     (async () => {
       const product = await db.collections.product.findOne({ selector: { id: groceryItem.product_id } }).exec();
-      const container = await db.collections.container.findOne({ selector: { id: groceryItem.container_id } }).exec();
+      // Only query for container if container_id is not 'root' or legacy empty/null values
+      const container = groceryItem.container_id && 
+                       groceryItem.container_id !== 'root' && 
+                       groceryItem.container_id !== ''
+        ? await db.collections.container.findOne({ selector: { id: groceryItem.container_id } }).exec()
+        : null;
       if (!cancelled) {
         setDetails({
           groceryItem,

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { RxDocument } from 'rxdb';
-import { Box, Typography, TextField, Skeleton, Breadcrumbs, useTheme, Link, useMediaQuery, Badge } from '@mui/material';
+import { Box, Typography, TextField, Skeleton, Breadcrumbs, useTheme, Link, useMediaQuery, Badge, Fab, Paper, Chip, Snackbar, Alert, Backdrop } from '@mui/material';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import LocalDiningIcon from '@mui/icons-material/LocalDining';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CloseIcon from '@mui/icons-material/Close';
+import MoveUpIcon from '@mui/icons-material/MoveUp';
 import Masonry from '@mui/lab/Masonry';
 import { useRxDB } from 'rxdb-hooks';
 import { ContainerDocType } from '../../../types/dbCollections';
@@ -13,6 +16,7 @@ import { ContainerCard } from './ContainerCard';
 import GroceryItemCard from '../groceryItems/GroceryItemCard';
 import AddContainerDialog from './ContainerNewEdit';
 import GroceryItemAddDialog from '../groceryItems/GroceryItemAddDialog';
+import ContainerSelectionDialog from './ContainerSelectionDialog';
 import { useTranslation } from 'react-i18next';
 import { GroceryItemDocType } from '../../../types/dbCollections';
 
@@ -24,10 +28,118 @@ const ContainerOverview: React.FC = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
   const [groceryItems, setGroceryItems] = useState<GroceryItemDocType[]>([]);
+  const [speedDialOpen, setSpeedDialOpen] = useState(false);
+  const [showBackdrop, setShowBackdrop] = useState(false);
+  
+  // Selection mode states
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedGroceries, setSelectedGroceries] = useState<Set<string>>(new Set());
+  const [containerSelectionOpen, setContainerSelectionOpen] = useState(false);
+  
+  // Notification states
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info'
+  });
+  
   const theme = useTheme();
   const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const maxBreadcrumbItems = isMobile ? 3 : 5;
+
+  // Selection mode functions
+  const enterSelectionMode = () => {
+    setSelectionMode(true);
+    setSelectedGroceries(new Set());
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedGroceries(new Set());
+  };
+
+  const toggleGrocerySelection = (groceryId: string) => {
+    const newSelection = new Set(selectedGroceries);
+    if (newSelection.has(groceryId)) {
+      newSelection.delete(groceryId);
+    } else {
+      newSelection.add(groceryId);
+    }
+    setSelectedGroceries(newSelection);
+  };
+
+  const showNotification = (message: string, severity: 'success' | 'error' | 'info' | 'warning') => {
+    setNotification({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const moveSelectedGroceries = async (targetContainerId: string) => {
+    if (!db || selectedGroceries.size === 0) return;
+    
+    try {
+      // Get all grocery items that match selected product IDs
+      const currentContainerId = parentId || 'root'; // If at root level, use 'root'
+      const itemsToMove = groceryItems.filter(item => 
+        selectedGroceries.has(item.product_id) && 
+        (item.container_id === currentContainerId || 
+         (currentContainerId === 'root' && (item.container_id === 'root' || item.container_id === '' || item.container_id === null || item.container_id === undefined)))
+      );
+      
+      if (itemsToMove.length === 0) {
+        showNotification(t('move.noItemsFound', 'No items found to move'), 'warning');
+        return;
+      }
+      
+      // Update each item's container_id
+      const updatePromises = itemsToMove.map(async (item) => {
+        try {
+          const doc = await db.collections.grocery_item.findOne(item.id).exec();
+          if (!doc) {
+            console.warn(`Document not found for item ${item.id}`);
+            return;
+          }
+          
+          const result = await doc.update({
+            $set: {
+              container_id: targetContainerId === 'root' ? 'root' : targetContainerId
+            }
+          });
+          return result;
+        } catch (error) {
+          console.error(`Failed to update item ${item.id}:`, error);
+          throw error;
+        }
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Get target container name for notification
+      const targetContainer = targetContainerId === 'root'
+        ? t('container.root', 'Root')
+        : containers.find(c => c.id === targetContainerId)?.name || t('move.unknownContainer', 'Unknown Container');
+      
+      showNotification(
+        t('move.success', 'Moved {{count}} item(s) to {{container}}', { 
+          count: itemsToMove.length, 
+          container: targetContainer 
+        }), 
+        'success'
+      );
+      
+      exitSelectionMode();
+    } catch (error) {
+      console.error('Error moving groceries:', error);
+      showNotification(t('move.error', 'Failed to move items'), 'error');
+    }
+  };
 
   useEffect(() => {
     if (!db) return;
@@ -46,15 +158,40 @@ const ContainerOverview: React.FC = () => {
     };
   }, [db]);
 
+  // Clear selection when container changes
+  useEffect(() => {
+    if (selectionMode) {
+      exitSelectionMode();
+    }
+  }, [parentId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle backdrop delay to avoid interfering with SpeedDial
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (speedDialOpen && isMobile) {
+      // Delay showing backdrop to allow SpeedDial to fully open
+      timeoutId = setTimeout(() => {
+        setShowBackdrop(true);
+      }, 200); // 200ms delay
+    } else {
+      setShowBackdrop(false);
+    }
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [speedDialOpen, isMobile]);
+
   // Filter containers based on search or parentId
   let displayContainers: ContainerDocType[] = [];
   if (search.trim()) {
     const s = search.toLowerCase();
     displayContainers = containers.filter(c => c.name.toLowerCase().includes(s));
   } else if (parentId) {
-    displayContainers = containers.filter(c => c.parent_container_id === parentId);
+    displayContainers = containers.filter(c => (c.parent_container_id || null) === (parentId || null));
   } else {
-    displayContainers = containers.filter(c => !c.parent_container_id);
+    displayContainers = containers.filter(c => !(c.parent_container_id || null));
   }
 
   // Get parent container for breadcrumb
@@ -63,7 +200,7 @@ const ContainerOverview: React.FC = () => {
   // Filter groceries for current container
   const groceriesInContainer = parentContainer
     ? groceryItems.filter(item => item.container_id === parentContainer.id)
-    : [];
+    : groceryItems.filter(item => item.container_id === 'root' || item.container_id === '' || item.container_id === null || item.container_id === undefined); // Show root-level groceries (support legacy empty/null values)
 
   // Show skeletons per card slot if containers are not loaded
   const showSkeletons = !db || containers.length === 0;
@@ -102,13 +239,22 @@ const ContainerOverview: React.FC = () => {
         // Pass parentContainer as container if inside a container
         {...(parentContainer ? { container: parentContainer } : {})}
       />
+      
+      <ContainerSelectionDialog
+        open={containerSelectionOpen}
+        onClose={() => setContainerSelectionOpen(false)}
+        containers={containers}
+        onSelectContainer={moveSelectedGroceries}
+        currentContainerId={parentId || undefined}
+        title={t('containerSelection.moveTitle', 'Move {{count}} item(s) to...', { count: selectedGroceries.size })}
+      />
       <Box
         sx={{
           width: '100%',
           maxWidth: { xs: '100%', md: 900 },
           flex: 1,
-          overflow: 'auto',
-          pb: 8,
+          overflow: 'visible',
+          pb: 2,
           mx: 'auto',
           borderRadius: { xs: 0, md: 3 },
           boxShadow: { xs: 'none', md: 3 },
@@ -185,7 +331,6 @@ const ContainerOverview: React.FC = () => {
                 spacing={1}
                 sx={{
                   width: '95%',
-                  //px: 2,
                   minHeight: displayContainers.length === 0 ? 0 : undefined
                 }}
               >
@@ -205,11 +350,11 @@ const ContainerOverview: React.FC = () => {
           </Box>
         )}
         {/* Groceries in current container */}
-        {parentContainer && groceriesInContainer.length > 0 && (
-          <Box sx={{ width: '100%', maxWidth: { xs: '100%', md: '95%' }, mt: 1 }}>
+        {groceriesInContainer.length > 0 && (
+          <Box sx={{ width: '100%', maxWidth: { xs: '100%', md: '95%' }, mt: 1 , mx: 'auto'}}>
             <Typography variant="h6" sx={{ mb: 2 }}>{t('common.groceries', 'Groceries')}</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
+              <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%' }}>
                 {/* Group groceries by product_id for GroceryItemCard */}
                 {Object.values(
                   groceriesInContainer.reduce((acc, item) => {
@@ -217,50 +362,176 @@ const ContainerOverview: React.FC = () => {
                     acc[item.product_id].push(item);
                     return acc;
                   }, {} as Record<string, GroceryItemDocType[]>)
-                ).map((items, idx) => (
-                  <Badge key={items[0].id || idx} badgeContent={items.length > 1 ? items.length : undefined} color="primary" sx={{ width: '100%' }}>
-                    <GroceryItemCard groceryItems={items} />
-                  </Badge>
-                ))}
+                ).map((items, idx) => {
+                  const uniqueKey = `${items[0].product_id}-${idx}`;
+                  return (
+                    <Badge key={uniqueKey} badgeContent={items.length > 1 ? items.length : undefined} color="primary" sx={{ width: '100%' }}>
+                      <GroceryItemCard 
+                        groceryItems={items}
+                        selectionMode={selectionMode}
+                        isSelected={selectedGroceries.has(items[0].product_id)}
+                        onSelectionChange={toggleGrocerySelection}
+                      />
+                    </Badge>
+                  );
+                })}
               </Masonry>
             </Box>
           </Box>
         )}
       </Box>
-      {/* SpeedDial for actions */}
-      <SpeedDial
-        ariaLabel={t('containerOverview.aria.speedDialLabel', 'Container actions')}
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 72, md: 32 },
-          right: 32,
-          zIndex: 1000
-        }}
-        icon={<SpeedDialIcon />}
+      
+      {/* Selection Mode Floating Action Bar */}
+      {selectionMode && (
+        <Paper
+          elevation={8}
+          sx={{
+            position: 'fixed',
+            bottom: { xs: 72, md: 16 },
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            px: 3,
+            py: 1.5,
+            zIndex: 1000,
+            borderRadius: 3,
+            bgcolor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText
+          }}
+        >
+          <Chip
+            label={t('selection.selectedCount', '{{count}} selected', { count: selectedGroceries.size })}
+            size="small"
+            sx={{ 
+              bgcolor: theme.palette.primary.contrastText+'4D', // 30% opacity
+              color: 'inherit',
+              fontWeight: 'medium'
+            }}
+          />
+          
+          <Fab
+            size="small"
+            color="secondary"
+            onClick={() => {
+              setContainerSelectionOpen(true);
+            }}
+            disabled={selectedGroceries.size === 0}
+            sx={{ mx: 1 }}
+          >
+            <MoveUpIcon />
+          </Fab>
+          
+          <Fab
+            size="small"
+            onClick={exitSelectionMode}
+            sx={{ 
+              bgcolor: 'rgba(255, 255, 255, 0.2)', 
+              color: 'inherit',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.3)'
+              }
+            }}
+          >
+            <CloseIcon />
+          </Fab>
+        </Paper>
+      )}
+      
+      {/* SpeedDial Backdrop - only on mobile when SpeedDial is open */}
+      {!selectionMode && showBackdrop && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: 'rgba(0, 0, 0, 0.3)',
+            zIndex: 999,
+            backdropFilter: 'blur(2px)'
+          }}
+          onClick={() => setSpeedDialOpen(false)}
+        />
+      )}
+      
+      {/* SpeedDial for actions - hidden in selection mode */}
+      {!selectionMode && (
+        <SpeedDial
+          ariaLabel={t('containerOverview.aria.speedDialLabel', 'Container actions')}
+          open={speedDialOpen}
+          onOpen={() => setSpeedDialOpen(true)}
+          onClose={() => setSpeedDialOpen(false)}
+          sx={{
+            position: 'fixed',
+            bottom: { xs: 72, md: 32 },
+            right: 32,
+            zIndex: 1000,
+            '& .MuiSpeedDialAction-fab': {
+              bgcolor: theme.palette.grey[900],
+              color: theme.palette.text.primary,
+              boxShadow: theme.shadows[12],
+              '&:hover': {
+                bgcolor: theme.palette.action.hover
+              }
+            }
+          }}
+          icon={<SpeedDialIcon />}
+        >
+          <SpeedDialAction
+            icon={<AddBoxIcon />}
+            onClick={() => setAddDialogOpen(true)}
+            slotProps={{
+              tooltip: {
+                title: parentContainer
+                  ? t('containerOverview.actions.addSubContainer', 'Add Sub-Container')
+                  : t('containerOverview.actions.addContainer', 'Add Container'),
+                open: false
+              }
+            }}
+          />
+          <SpeedDialAction
+            icon={<LocalDiningIcon />}
+            onClick={() => setAddGroceryOpen(true)}
+            slotProps={{
+              tooltip: {
+                title: t('containerOverview.actions.addGroceryItem', 'Add Grocery Item'),
+                open: false
+              }
+            }}
+          />
+          {/* Only show select action if there are groceries in current container */}
+          {groceriesInContainer.length > 0 && (
+            <SpeedDialAction
+              icon={<CheckBoxIcon />}
+              onClick={enterSelectionMode}
+              slotProps={{
+                tooltip: {
+                  title: t('containerOverview.actions.selectGroceries', 'Select Groceries'),
+                  open: false
+                }
+              }}
+            />
+          )}
+        </SpeedDial>
+      )}
+      
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={() => setNotification(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <SpeedDialAction
-          icon={<AddBoxIcon />}
-          onClick={() => setAddDialogOpen(true)}
-          slotProps={{
-            tooltip: {
-              title: parentContainer
-                ? t('containerOverview.actions.addSubContainer', 'Add Sub-Container')
-                : t('containerOverview.actions.addContainer', 'Add Container'),
-              open: false
-            }
-          }}
-        />
-        <SpeedDialAction
-          icon={<LocalDiningIcon />}
-          onClick={() => setAddGroceryOpen(true)}
-          slotProps={{
-            tooltip: {
-              title: t('containerOverview.actions.addGroceryItem', 'Add Grocery Item'),
-              open: false
-            }
-          }}
-        />
-      </SpeedDial>
+        <Alert 
+          onClose={() => setNotification(prev => ({ ...prev, open: false }))} 
+          severity={notification.severity}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

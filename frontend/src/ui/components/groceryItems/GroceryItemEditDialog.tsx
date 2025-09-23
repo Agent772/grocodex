@@ -115,7 +115,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
             expirationDate: currentGroceryItem.expiration_date || '',
             notes: currentGroceryItem.notes || ''
           });
-          setContainer(currentGroceryItem.container_id ? containerOptions.find(c => c.id === currentGroceryItem.container_id) || null : null);
+          setContainer(currentGroceryItem.container_id && currentGroceryItem.container_id !== 'root' ? containerOptions.find(c => c.id === currentGroceryItem.container_id) || null : null);
           // Load product group for info
           if (product?.product_group_id && db && db.collections.product_group) {
             const doc = await db.collections.product_group.findOne({ selector: { id: product.product_group_id } }).exec();
@@ -179,7 +179,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
       buy_date: manualFields.buyDate || currentGroceryItem.buy_date,
       expiration_date: manualFields.expirationDate || currentGroceryItem.expiration_date,
       notes: manualFields.notes || currentGroceryItem.notes,
-      container_id: container ? container.id : currentGroceryItem.container_id,
+      container_id: container ? container.id : 'root', // Use 'root' when no container selected (consistent with add dialog)
       updated_at: new Date().toISOString(),
     };
     await updateGroceryItem(currentGroceryItem.id, updatedFields);

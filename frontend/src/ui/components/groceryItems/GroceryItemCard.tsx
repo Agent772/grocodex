@@ -2,7 +2,7 @@ import React from 'react';
 import GroceryItemUseDialog from './GroceryItemUseDialog';
 import GroceryItemEditDialog from './GroceryItemEditDialog';
 import { useGroceryItemUse } from '../../hooks/useGroceryItemUse';
-import { Card, Box, Typography, Chip, Avatar, IconButton, Collapse } from '@mui/material';
+import { Card, Box, Typography, Chip, Avatar, IconButton, Collapse, Checkbox } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EditIcon from '@mui/icons-material/Edit';
 import { GroceryItemDocType } from '../../../types/dbCollections';
@@ -16,10 +16,19 @@ import { getUnitLabel } from '../../utils/getUnitLabel';
 
 export interface GroceryItemCardProps {
   groceryItems: GroceryItemDocType[];
+  // Selection mode props
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onSelectionChange?: (productId: string) => void;
 }
 
 
-const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
+const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ 
+  groceryItems, 
+  selectionMode = false, 
+  isSelected = false, 
+  onSelectionChange 
+}) => {
   const [useDialogOpen, setUseDialogOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
   const { useItem } = useGroceryItemUse(groceryItems);
@@ -29,6 +38,16 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   const { product } = useGroceryItemDetails(mainItem);
   const containerOptions = useContainers();
   const { t } = useTranslation();
+
+  const handleCardClick = () => {
+    if (selectionMode) {
+      // In selection mode, only checkbox should handle selection
+      // Card click is disabled to prevent double-triggering
+      return;
+    } else if (!selectionMode) {
+      setUseDialogOpen(true);
+    }
+  };
 
   // Group by container_id for location details
   const locationGroups = groceryItems.reduce<Record<string, GroceryItemDocType[]>>((acc, item) => {
@@ -52,21 +71,57 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ groceryItems }) => {
   return (
     <>
       <Card
-        sx={{ position: 'relative', display: 'flex', flexDirection: 'column', p: 2, borderRadius: 2, boxShadow: 2, width: '100%', cursor: 'pointer' }}
-        onClick={() => setUseDialogOpen(true)}
-      >
-      {/* Edit button at top right */}
-      <IconButton
-        aria-label={t('aria.edit', 'Edit')}
-        size="small"
-        sx={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
-        onClick={e => {
-          e.stopPropagation();
-          setEditOpen(true);
+        sx={{ 
+          position: 'relative', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          p: 2, 
+          borderRadius: 2, 
+          boxShadow: 2, 
+          width: '100%', 
+          cursor: selectionMode ? 'default' : 'pointer',
+          // Selection mode styling - use subtle visual feedback that doesn't change layout
+          opacity: selectionMode && isSelected ? 0.8 : 1,
+          transform: selectionMode && isSelected ? 'scale(0.98)' : 'scale(1)',
+          transition: 'opacity 0.2s, transform 0.2s'
         }}
+        onClick={handleCardClick}
       >
-        <EditIcon />
-      </IconButton>
+      {/* Selection checkbox - top right in selection mode */}
+      {selectionMode && (
+        <Checkbox
+          checked={isSelected}
+          onChange={(e) => {
+            e.stopPropagation();
+            if (onSelectionChange && mainItem.product_id) {
+              onSelectionChange(mainItem.product_id);
+            }
+          }}
+          sx={{ 
+            position: 'absolute', 
+            top: 8, 
+            right: 8, 
+            zIndex: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 1
+          }}
+        />
+      )}
+      
+      {/* Edit button at top right - hidden in selection mode */}
+      {!selectionMode && (
+        <IconButton
+          aria-label={t('aria.edit', 'Edit')}
+          size="small"
+          sx={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
+          onClick={e => {
+            e.stopPropagation();
+            setEditOpen(true);
+          }}
+        >
+          <EditIcon />
+        </IconButton>
+      )}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Avatar src={product?.image_url} sx={{ mr: 2 }} />
         <Typography variant="h6" sx={{ flexGrow: 1 }}>{product?.name || t('groceryCard.unknownProduct', 'Unknown Product')}</Typography>

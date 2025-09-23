@@ -91,7 +91,7 @@ const ProductOverview: React.FC = () => {
           maxWidth: { xs: '100%', md: 900 },
           flex: 1,
           overflow: 'auto',
-          pb: 8,
+          pb: 2,
           mx: 'auto',
           borderRadius: { xs: 0, md: 3 },
           boxShadow: { xs: 'none', md: 3 },

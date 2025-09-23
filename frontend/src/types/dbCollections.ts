@@ -52,7 +52,7 @@ export interface ProductDocType {
 export interface GroceryItemDocType {
   id: string;
   product_id: string;
-  container_id: string;
+  container_id: string; // Use special 'ROOT' value for root level
   rest_quantity?: number;
   expiration_date?: string;
   buy_date?: string;

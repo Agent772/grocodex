@@ -296,7 +296,7 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
     const groceryItem: GroceryItemDocType = {
       id: crypto.randomUUID(),
       product_id: product.id,
-      container_id: container ? container.id : '',
+      container_id: container ? container.id : 'root',
       rest_quantity: manualFields.quantity ? Number(manualFields.quantity) : undefined,
       expiration_date: manualFields.expirationDate || undefined,
       buy_date: manualFields.buyDate || undefined,
