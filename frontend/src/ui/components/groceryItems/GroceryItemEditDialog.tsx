@@ -17,6 +17,7 @@ interface GroceryItemEditDialogProps {
   onSaved?: () => void;
   renderInDialog?: boolean;
   hideHeader?: boolean;
+  onRegisterSaveHandler?: (handler: () => Promise<void>) => void;
 }
 
 const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({ 
@@ -25,7 +26,8 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
   onClose, 
   onSaved,
   renderInDialog = true,
-  hideHeader = false
+  hideHeader = false,
+  onRegisterSaveHandler
 }) => {
   const db = useRxDB();
   const [container, setContainer] = useState<ContainerDocType | null>(null);
@@ -72,6 +74,13 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
       })();
     }
   }, [open, groceryItem, containerOptions, db]);
+
+  // Register save handler with parent
+  useEffect(() => {
+    if (onRegisterSaveHandler) {
+      onRegisterSaveHandler(handleSave);
+    }
+  }, [onRegisterSaveHandler, manualFields, container, groceryItem]);
 
   const handleManualFieldChange = (field: string, value: string) => {
     setManualFields(prev => ({ ...prev, [field]: value }));
