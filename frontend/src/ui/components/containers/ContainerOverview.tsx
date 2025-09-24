@@ -29,7 +29,6 @@ const ContainerOverview: React.FC = () => {
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
   const [groceryItems, setGroceryItems] = useState<GroceryItemDocType[]>([]);
   const [speedDialOpen, setSpeedDialOpen] = useState(false);
-  const [showBackdrop, setShowBackdrop] = useState(false);
   
   // Selection mode states
   const [selectionMode, setSelectionMode] = useState(false);
@@ -165,23 +164,10 @@ const ContainerOverview: React.FC = () => {
     }
   }, [parentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handle backdrop delay to avoid interfering with SpeedDial
+  // Reset SpeedDial state when mobile breakpoint changes to fix initialization issues
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    if (speedDialOpen && isMobile) {
-      // Delay showing backdrop to allow SpeedDial to fully open
-      timeoutId = setTimeout(() => {
-        setShowBackdrop(true);
-      }, 200); // 200ms delay
-    } else {
-      setShowBackdrop(false);
-    }
-    
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [speedDialOpen, isMobile]);
+    setSpeedDialOpen(false);
+  }, [isMobile]);
 
   // Filter containers based on search or parentId
   let displayContainers: ContainerDocType[] = [];
@@ -439,26 +425,10 @@ const ContainerOverview: React.FC = () => {
         </Paper>
       )}
       
-      {/* SpeedDial Backdrop - only on mobile when SpeedDial is open */}
-      {!selectionMode && showBackdrop && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            bgcolor: 'rgba(0, 0, 0, 0.3)',
-            zIndex: 999,
-            backdropFilter: 'blur(2px)'
-          }}
-          onClick={() => setSpeedDialOpen(false)}
-        />
-      )}
-      
       {/* SpeedDial for actions - hidden in selection mode */}
       {!selectionMode && (
         <SpeedDial
+          key={`speeddial-${isMobile}`}
           ariaLabel={t('containerOverview.aria.speedDialLabel', 'Container actions')}
           open={speedDialOpen}
           onOpen={() => setSpeedDialOpen(true)}
