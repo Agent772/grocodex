@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Typography, TextField } from '@mui/material';
+import { Box, Typography, TextField, Paper } from '@mui/material';
 import GroceryItemAddDialog from './GroceryItemAddDialog';
 import GroceryItemCard from './GroceryItemCard';
 import Badge from '@mui/material/Badge';
@@ -64,7 +64,8 @@ const GroceryOverview: React.FC = () => {
         </Typography>
       )}
       <GroceryItemAddDialog open={addGroceryOpen} onClose={() => setAddGroceryOpen(false)} />
-      <Box
+      <Paper
+        elevation={isMobile ? 0 : 2}
         sx={{
           width: '100%',
           maxWidth: { xs: '100%', md: 900 },
@@ -73,7 +74,6 @@ const GroceryOverview: React.FC = () => {
           pb: 8,
           mx: 'auto',
           borderRadius: { xs: 0, md: 3 },
-          boxShadow: { xs: 'none', md: 3 },
           backgroundColor: { xs: 'transparent', md: 'background.paper' },
         }}
       >
@@ -109,7 +109,7 @@ const GroceryOverview: React.FC = () => {
             ))}
           </Masonry>
         </Box>
-      </Box>
+      </Paper>
       <Fab
         color="primary"
         aria-label={t('GroceryOverview.aria.addGroceryItem', 'Add Grocery Item')}

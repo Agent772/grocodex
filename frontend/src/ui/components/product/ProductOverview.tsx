@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, useTheme, useMediaQuery, Fab } from '@mui/material';
+import { Box, Typography, TextField, useTheme, useMediaQuery, Fab, Paper } from '@mui/material';
 import Masonry from '@mui/lab/Masonry';
 import AddIcon from '@mui/icons-material/Add';
 import { useRxDB } from 'rxdb-hooks';
@@ -85,7 +85,8 @@ const ProductOverview: React.FC = () => {
           {t('productOverview.title', 'Product Overview')}
         </Typography>
       )}
-      <Box
+      <Paper
+        elevation={isMobile ? 0 : 2}
         sx={{
           width: '100%',
           maxWidth: { xs: '100%', md: 900 },
@@ -94,7 +95,6 @@ const ProductOverview: React.FC = () => {
           pb: 8,
           mx: 'auto',
           borderRadius: { xs: 0, md: 3 },
-          boxShadow: { xs: 'none', md: 3 },
           backgroundColor: { xs: 'transparent', md: 'background.paper' },
         }}
       >
@@ -127,7 +127,7 @@ const ProductOverview: React.FC = () => {
             ))}
           </Masonry>
         </Box>
-      </Box>
+      </Paper>
     {/* Edit dialog for product group */}
     <ProductGroupEditDialog
       open={editDialogOpen}

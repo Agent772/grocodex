@@ -35,5 +35,13 @@
   "aria.amountUsed": "Amount Used",
   "aria.image.delete": "Delete Image",
   "containerOverview.aria.speedDialLabel": "Container actions",
-  "error.ERR_SHOPPING_LIST_ITEM_VALIDATION": "Shopping list item must have either a product or both name and unit filled."
+  "error.ERR_SHOPPING_LIST_ITEM_VALIDATION": "Shopping list item must have either a product or both name and unit filled.",
+  "import.title": "Import Shopping List",
+  "import.description": "Paste your shopping list from Cookidoo or other sources below. Each item should be on a new line.",
+  "import.placeholder": "Paste your shopping list here...\n\ne.g.:\n2 Tomatoes\n500g Flour\n1 Pack Butter",
+  "import.pasteFromClipboard": "Paste",
+  "import.clipboardDetected": "Clipboard content detected. Would you like to paste it?",
+  "import.pasteButton": "Paste from clipboard",
+  "import.importButton": "Import",
+  "common.clear": "Clear"
 }

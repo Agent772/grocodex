@@ -100,13 +100,12 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
     <>
       {!hideHeader && <DialogTitle>{t('groceryItem.edit.title', 'Edit Grocery Item')}</DialogTitle>}
       <DialogContent sx={{ pb: 1 }}>
-        <Box display="flex" flexDirection="column" gap={1} mt={2}>
+        <Box display="flex" flexDirection="column" gap={1.5} mt={2}>
           <TextField
             label={t('productGroup.label', 'Product Group')}
             value={productGroup?.name || ''}
             fullWidth
             disabled
-            sx={{ mb: 1 }}
           />
           <TextField
             label={t('groceryItem.product', 'Product')}
@@ -138,6 +137,7 @@ const GroceryItemEditDialog: React.FC<GroceryItemEditDialogProps> = ({
               slotProps={{
                 htmlInput: {
                   min: 0,
+                  style: { paddingRight: '8px' }
                 },
                 input: {
                   endAdornment: 

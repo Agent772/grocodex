@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RxDocument } from 'rxdb';
-import { Box, Typography, TextField, Skeleton, Breadcrumbs, useTheme, Link, useMediaQuery, Badge } from '@mui/material';
+import { Box, Typography, TextField, Skeleton, Breadcrumbs, useTheme, Link, useMediaQuery, Badge, Paper } from '@mui/material';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
@@ -104,7 +104,8 @@ const ContainerOverview: React.FC = () => {
         // Pass parentContainer as container if inside a container
         {...(parentContainer ? { container: parentContainer } : {})}
       />
-      <Box
+      <Paper
+        elevation={isMobile ? 0 : 2}
         sx={{
           width: '100%',
           maxWidth: { xs: '100%', md: 900 },
@@ -113,7 +114,6 @@ const ContainerOverview: React.FC = () => {
           pb: 8,
           mx: 'auto',
           borderRadius: { xs: 0, md: 3 },
-          boxShadow: { xs: 'none', md: 3 },
           backgroundColor: { xs: 'transparent', md: 'background.paper' },
         }}
       >
@@ -228,7 +228,7 @@ const ContainerOverview: React.FC = () => {
             </Box>
           </Box>
         )}
-      </Box>
+      </Paper>
       {/* SpeedDial for actions */}
       <SpeedDial
         ariaLabel={t('containerOverview.aria.speedDialLabel', 'Container actions')}

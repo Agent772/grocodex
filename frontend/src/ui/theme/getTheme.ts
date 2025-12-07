@@ -27,4 +27,32 @@ export const getTheme = (mode: 'light' | 'dark'): Theme =>
       h5: { fontWeight: 700 },
       h6: { fontWeight: 700 },
     },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          '*': {
+            // Custom scrollbar for webkit browsers (Chrome, Safari, Edge)
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              height: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+              borderRadius: '4px',
+              '&:hover': {
+                backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+              },
+            },
+          },
+          // Firefox scrollbar styling
+          'html': {
+            scrollbarWidth: 'thin',
+            scrollbarColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.2) transparent' : 'rgba(0, 0, 0, 0.2) transparent',
+          },
+        },
+      },
+    },
   });

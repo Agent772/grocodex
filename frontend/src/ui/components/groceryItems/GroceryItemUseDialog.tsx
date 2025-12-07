@@ -37,7 +37,7 @@ const GroceryItemUseDialog: React.FC<GroceryItemUseDialogProps> = ({ open, onClo
       <DialogTitle>{t('groceryItem.use.title', 'Use Item')}</DialogTitle>
       <DialogContent sx={{ minWidth: 300 }}>
         <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <Typography gutterBottom>
+          <Typography gutterBottom={false}>
             {t('groceryItem.use.available', 'Available')}: {totalRestQuantity}
           </Typography>
           <Chip label={totalRestQuantity + (product?.unit ? ' ' + getUnitLabel(product.unit, t) : '')} size="small" />

@@ -6,6 +6,7 @@ import { BottomNav } from './ui/components/nav/BottomNav';
 import { SideDrawer } from './ui/components/nav/SideDrawer';
 import PantryPage from './ui/pages/PantryPage';
 import SettingsPage from './ui/pages/SettingsPage';
+import ImportPage from './ui/pages/ImportPage';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { useLanguageSync } from './ui/hooks/useLanguageSync';
@@ -39,7 +40,7 @@ function AppContent() {
         content = <Typography variant="h5" align="center">Shopping Lists (Coming soon)</Typography>;
         break;
       case 1:
-        content = <Typography variant="h5" align="center">CookieDoo Import (Coming soon)</Typography>;
+        content = <ImportPage />;
         break;
       case 2:
         content = <PantryPage />;

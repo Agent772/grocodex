@@ -35,5 +35,13 @@
   "aria.amountUsed": "Verwendete Menge",
   "aria.image.delete": "Bild löschen",
   "containerOverview.aria.speedDialLabel": "Behälteraktionen",
-  "error.ERR_SHOPPING_LIST_ITEM_VALIDATION": "Einkaufslistenartikel muss entweder ein Produkt oder sowohl Name als auch Einheit ausgefüllt haben."
+  "error.ERR_SHOPPING_LIST_ITEM_VALIDATION": "Einkaufslistenartikel muss entweder ein Produkt oder sowohl Name als auch Einheit ausgefüllt haben.",
+  "import.title": "Einkaufsliste importieren",
+  "import.description": "Fügen Sie Ihre Einkaufsliste von Cookidoo oder anderen Quellen unten ein. Jeder Artikel sollte in einer neuen Zeile stehen.",
+  "import.placeholder": "Fügen Sie hier Ihre Einkaufsliste ein...\n\nz.B.:\n2 Tomaten\n500g Mehl\n1 Packung Butter",
+  "import.pasteFromClipboard": "Einfügen",
+  "import.clipboardDetected": "Zwischenablage-Inhalt erkannt. Möchten Sie ihn einfügen?",
+  "import.pasteButton": "Aus Zwischenablage einfügen",
+  "import.importButton": "Importieren",
+  "common.clear": "Löschen"
 }
