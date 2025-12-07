@@ -15,12 +15,14 @@ import shoppingListItemSchema from './schemas/shopping_list_item.schema';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 // Add RxDB plugins as needed
 // addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBUpdatePlugin);
+addRxPlugin(RxDBMigrationSchemaPlugin);
 // No addRxPlugin for replication-couchdb, use replicateCouchDB directly for sync
 
 export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
@@ -37,7 +39,18 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
 
   // Collection definitions
   const collections: { [key: string]: RxCollectionCreator } = {
-    app_config: { schema: appConfigSchema },
+    app_config: { 
+      schema: appConfigSchema,
+      migrationStrategies: {
+        1: (oldDoc: any) => {
+          // Add fuzzy_match_threshold field with default value
+          return {
+            ...oldDoc,
+            fuzzy_match_threshold: 0.7
+          };
+        }
+      }
+    },
     container: { schema: containerSchema },
     supermarket: { schema: supermarketSchema },
     supermarket_product: { schema: supermarketProductSchema },
@@ -50,7 +63,7 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
 
   // Add collections and hooks
   for (const [name, config] of Object.entries(collections)) {
-    if (!db.collections[name]) {
+    if (!db.collections[name as keyof GrocodexCollections]) {
       await db.addCollections({ [name]: config });
     }
     // const collection = db.collections[name];
@@ -73,6 +86,7 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
       household_name: 'My Household',
       language: 'en', // Default to English
       ai_token: null,
+      fuzzy_match_threshold: 0.7, // Default threshold for import matching
       created_at: now,
       updated_at: now
     });

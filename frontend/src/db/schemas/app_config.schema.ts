@@ -4,7 +4,7 @@ import { AppConfigDocType } from '../../types/dbCollections';
 const appConfigSchema: RxJsonSchema<AppConfigDocType> = {
   title: 'app_config',
   description: 'Application configuration settings (singleton)',
-  version: 0,
+  version: 1,
   type: 'object',
   primaryKey: 'id',
   properties: {
@@ -12,6 +12,7 @@ const appConfigSchema: RxJsonSchema<AppConfigDocType> = {
     household_name: { type: 'string', maxLength: 200 },
     language: { type: 'string', maxLength: 10 }, // ISO language code (e.g., 'en', 'de')
     ai_token: { type: ['string', 'null'], maxLength: 500 }, // Optional AI integration token
+    fuzzy_match_threshold: { type: 'number', minimum: 0, maximum: 1, default: 0.7 }, // Threshold for fuzzy matching (0-1)
     created_at: { type: 'string', format: 'date-time' },
     updated_at: { type: 'string', format: 'date-time' }
   },

@@ -14,6 +14,7 @@ import {
   InputAdornment,
   Alert,
   Snackbar,
+  Slider,
   useMediaQuery
 } from '@mui/material';
 import { Visibility, VisibilityOff, Save, ArrowBack } from '@mui/icons-material';
@@ -35,6 +36,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onClose }) => {
   const [householdName, setHouseholdName] = useState('');
   const [language, setLanguage] = useState('en');
   const [aiToken, setAiToken] = useState('');
+  const [fuzzyMatchThreshold, setFuzzyMatchThreshold] = useState(0.7);
   const [showAiToken, setShowAiToken] = useState(false);
   const [isModified, setIsModified] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -46,6 +48,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onClose }) => {
       setHouseholdName(config.household_name);
       setLanguage(config.language);
       setAiToken(config.ai_token || '');
+      setFuzzyMatchThreshold(config.fuzzy_match_threshold ?? 0.7);
     }
   }, [config]);
 
@@ -56,17 +59,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onClose }) => {
     const modified =
       householdName !== config.household_name ||
       language !== config.language ||
-      aiToken !== (config.ai_token || '');
+      aiToken !== (config.ai_token || '') ||
+      fuzzyMatchThreshold !== (config.fuzzy_match_threshold ?? 0.7);
     
     setIsModified(modified);
-  }, [householdName, language, aiToken, config]);
+  }, [householdName, language, aiToken, fuzzyMatchThreshold, config]);
 
   const handleSave = async () => {
     try {
       await updateConfig({
         household_name: householdName,
         language: language,
-        ai_token: aiToken || null
+        ai_token: aiToken || null,
+        fuzzy_match_threshold: fuzzyMatchThreshold
       });
 
       // Update i18n language
@@ -87,6 +92,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onClose }) => {
       setHouseholdName(config.household_name);
       setLanguage(config.language);
       setAiToken(config.ai_token || '');
+      setFuzzyMatchThreshold(config.fuzzy_match_threshold ?? 0.7);
       setIsModified(false);
     }
   };
@@ -165,6 +171,30 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onClose }) => {
               }
             }}
           />
+
+          {/* Fuzzy Match Threshold */}
+          <Box>
+            <Typography gutterBottom>
+              {t('settings.fuzzyMatchThreshold', 'Fuzzy Match Threshold')}: {Math.round(fuzzyMatchThreshold * 100)}%
+            </Typography>
+            <Slider
+              value={fuzzyMatchThreshold}
+              onChange={(_, value) => setFuzzyMatchThreshold(value as number)}
+              min={0}
+              max={1}
+              step={0.05}
+              marks={[
+                { value: 0, label: '0%' },
+                { value: 0.5, label: '50%' },
+                { value: 1, label: '100%' }
+              ]}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(value) => `${Math.round(value * 100)}%`}
+            />
+            <Typography variant="caption" color="text.secondary">
+              {t('settings.fuzzyMatchThresholdHelper', 'Minimum similarity required for shopping list import suggestions. Higher values = more strict matching.')}
+            </Typography>
+          </Box>
 
           {/* Action Buttons */}
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>

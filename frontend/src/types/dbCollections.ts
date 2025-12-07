@@ -5,6 +5,7 @@ export interface AppConfigDocType {
   household_name: string;
   language: string; // ISO language code (e.g., 'en', 'de')
   ai_token?: string | null; // Optional AI integration token
+  fuzzy_match_threshold?: number; // Threshold for fuzzy matching in imports (0-1, default 0.7)
   created_at?: string;
   updated_at?: string;
 }
