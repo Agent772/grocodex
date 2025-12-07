@@ -43,5 +43,13 @@
   "import.clipboardDetected": "Zwischenablage-Inhalt erkannt. Möchten Sie ihn einfügen?",
   "import.pasteButton": "Aus Zwischenablage einfügen",
   "import.importButton": "Importieren",
-  "common.clear": "Löschen"
+  "common.clear": "Löschen",
+  "unit.g": "g",
+  "unit.kg": "kg",
+  "unit.ml": "ml",
+  "unit.l": "l",
+  "unit.pcs": "Stk",
+  "unit.bundle": "Bund",
+  "unit.tsp": "TL",
+  "unit.tbsp": "EL"
 }

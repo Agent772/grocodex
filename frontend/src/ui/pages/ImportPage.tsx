@@ -10,9 +10,14 @@ import {
   IconButton,
   useTheme,
   useMediaQuery,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
 } from '@mui/material';
 import { ContentPaste as PasteIcon, FileUpload as ImportIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { parseShoppingList, ParsedShoppingListItem } from '../../utils/shoppingListParser';
 
 const ImportPage: React.FC = () => {
   const { t } = useTranslation();
@@ -20,6 +25,7 @@ const ImportPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [importText, setImportText] = useState<string>('');
   const [showClipboardPrompt, setShowClipboardPrompt] = useState<boolean>(false);
+  const [parsedItems, setParsedItems] = useState<ParsedShoppingListItem[]>([]);
 
   useEffect(() => {
     // Check if clipboard API is available and if we're likely on mobile
@@ -56,12 +62,14 @@ const ImportPage: React.FC = () => {
       return;
     }
     
-    // TODO: Import logic will be implemented in the next step
-    console.log('Import triggered with text:', importText);
+    const items = parseShoppingList(importText);
+    setParsedItems(items);
+    console.log('Parsed items:', items);
   };
 
   const handleClear = () => {
     setImportText('');
+    setParsedItems([]);
   };
 
   return (
@@ -162,6 +170,55 @@ const ImportPage: React.FC = () => {
             {t('import.importButton', 'Import')}
           </Button>
         </Box>
+
+        {/* Debug view for parsed items */}
+        {parsedItems.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Parsed Items ({parsedItems.length})
+            </Typography>
+            <Paper 
+              variant="outlined" 
+              sx={{ 
+                maxHeight: '300px', 
+                overflow: 'auto',
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)'
+              }}
+            >
+              <List dense>
+                {parsedItems.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <ListItem>
+                      <ListItemText
+                        primary={item.name}
+                        secondary={
+                          <>
+                            {item.quantity && item.unit && (
+                              <Typography component="span" variant="body2" color="primary">
+                                {item.quantity} {item.unit}
+                                {item.quantityMin !== undefined && item.quantityMax !== undefined && (
+                                  <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
+                                    ({item.quantityMin} - {item.quantityMax})
+                                  </Typography>
+                                )}
+                              </Typography>
+                            )}
+                            {item.category && (
+                              <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                • {item.category}
+                              </Typography>
+                            )}
+                          </>
+                        }
+                      />
+                    </ListItem>
+                    {index < parsedItems.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </List>
+            </Paper>
+          </Box>
+        )}
       </Paper>
     </Container>
   );

@@ -43,5 +43,13 @@
   "import.clipboardDetected": "Clipboard content detected. Would you like to paste it?",
   "import.pasteButton": "Paste from clipboard",
   "import.importButton": "Import",
-  "common.clear": "Clear"
+  "common.clear": "Clear",
+  "unit.g": "g",
+  "unit.kg": "kg",
+  "unit.ml": "ml",
+  "unit.l": "l",
+  "unit.pcs": "pcs",
+  "unit.bundle": "bundle",
+  "unit.tsp": "tsp",
+  "unit.tbsp": "tbsp"
 }
