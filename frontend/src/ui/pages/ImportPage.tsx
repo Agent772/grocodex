@@ -338,7 +338,10 @@ const ImportPage: React.FC = () => {
         elevation={isMobile ? 0 : 2} 
         sx={{ 
           p: { xs: 2, md: 3 },
-          backgroundColor: { xs: 'transparent', md: 'background.paper' }
+          backgroundColor: { xs: 'transparent', md: 'background.paper' },
+          height: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Typography variant="h5" component="h1" gutterBottom>
@@ -367,19 +370,25 @@ const ImportPage: React.FC = () => {
         {/* Import Text Area */}
         {matchResults.length === 0 && (
           <>
-            <Box sx={{ position: 'relative', mb: 2 }}>
+            <Box sx={{ position: 'relative', mb: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
               <TextField
                 multiline
                 fullWidth
-                rows={12}
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
                 placeholder={t('import.placeholder', 'Paste your shopping list here...\n\ne.g.:\n2 Tomaten\n500g Mehl\n1 Packung Butter')}
                 variant="outlined"
                 sx={{
+                  height: '100%',
                   '& .MuiInputBase-root': {
                     fontFamily: 'monospace',
                     fontSize: '0.95rem',
+                    height: '100%',
+                    alignItems: 'flex-start',
+                  },
+                  '& .MuiInputBase-input': {
+                    height: '100% !important',
+                    overflow: 'auto !important',
                   }
                 }}
               />
