@@ -1,4 +1,14 @@
 // This file contains TypeScript interfaces for the Grocodex collections.
+
+export interface AppConfigDocType {
+  id: string; // Always 'config' for singleton
+  household_name: string;
+  language: string; // ISO language code (e.g., 'en', 'de')
+  ai_token?: string | null; // Optional AI integration token
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ContainerDocType {
   id: string;
   name: string;

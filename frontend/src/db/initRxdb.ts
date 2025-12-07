@@ -3,6 +3,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 //import { addCreatedAtHook, addUpdatedAtHook } from './hooks/timestampHooks';
 //import { addRestQuantityDefaultHook } from './hooks/groceryItemHooks';
 import { GrocodexCollections } from '../types/dbCollections';
+import appConfigSchema from './schemas/app_config.schema';
 import containerSchema from './schemas/container.schema';
 import supermarketSchema from './schemas/supermarket.schema';
 import supermarketProductSchema from './schemas/supermarket_product.schema';
@@ -36,6 +37,7 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
 
   // Collection definitions
   const collections: { [key: string]: RxCollectionCreator } = {
+    app_config: { schema: appConfigSchema },
     container: { schema: containerSchema },
     supermarket: { schema: supermarketSchema },
     supermarket_product: { schema: supermarketProductSchema },
@@ -60,6 +62,20 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
     //     addRestQuantityDefaultHook(collection, db);
     //   }
     // }
+  }
+
+  // Initialize default config if it doesn't exist
+  const existingConfig = await db.app_config.findOne({ selector: { id: 'config' } }).exec();
+  if (!existingConfig) {
+    const now = new Date().toISOString();
+    await db.app_config.insert({
+      id: 'config',
+      household_name: 'My Household',
+      language: 'en', // Default to English
+      ai_token: null,
+      created_at: now,
+      updated_at: now
+    });
   }
 
   return db;

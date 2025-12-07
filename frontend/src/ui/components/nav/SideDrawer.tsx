@@ -10,6 +10,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 import KitchenIcon from '@mui/icons-material/Kitchen';
+import SettingsIcon from '@mui/icons-material/Settings';
 import Box from '@mui/material/Box';
 
 export interface SideDrawerProps {
@@ -24,6 +25,7 @@ const navItems = [
   { key: 'nav.shopping_lists', icon: <ListAltIcon /> },
   { key: 'nav.cookiedoo_import', icon: <ImportExportIcon /> },
   { key: 'nav.pantry_overview', icon: <KitchenIcon /> },
+  { key: 'nav.settings', icon: <SettingsIcon /> },
 ];
 
 /**

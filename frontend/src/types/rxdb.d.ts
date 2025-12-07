@@ -1,5 +1,6 @@
 import { RxCollection } from 'rxdb';
 import {
+  AppConfigDocType,
   ContainerDocType,
   SupermarketDocType,
   SupermarketProductDocType,
@@ -11,6 +12,7 @@ import {
 } from './dbCollections';
 
 export type GrocodexCollections = {
+  app_config: RxCollection<AppConfigDocType>;
   container: RxCollection<ContainerDocType>;
   supermarket: RxCollection<SupermarketDocType>;
   supermarket_product: RxCollection<SupermarketProductDocType>;

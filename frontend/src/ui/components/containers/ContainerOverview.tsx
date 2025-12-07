@@ -15,9 +15,11 @@ import AddContainerDialog from './ContainerNewEdit';
 import GroceryItemAddDialog from '../groceryItems/GroceryItemAddDialog';
 import { useTranslation } from 'react-i18next';
 import { GroceryItemDocType } from '../../../types/dbCollections';
+import { useAppConfig } from '../../../db/hooks/logic/appConfigDBHooks';
 
 const ContainerOverview: React.FC = () => {
   const db = useRxDB();
+  const config = useAppConfig();
   const [search, setSearch] = useState('');
   const [containers, setContainers] = useState<ContainerDocType[]>([]);
   const [parentId, setParentId] = useState<string | null>(null);
@@ -129,7 +131,7 @@ const ContainerOverview: React.FC = () => {
           />
         </Box>
         {parentContainer && (
-          <Box sx={{ pb: 1, width: '100%', maxWidth: { xs: '100%', md: '95%' } }}>
+          <Box sx={{ pb: 1, pl: { xs: 0, md: 2 }, width: '100%', maxWidth: { xs: '100%', md: '95%' } }}>
             <Breadcrumbs 
               aria-label={t('aria.breadcrumb')} 
               maxItems={maxBreadcrumbItems} 
@@ -148,9 +150,9 @@ const ContainerOverview: React.FC = () => {
                     : null;
                 }
                 return [
-                  // Add root
+                  // Add root (household name)
                   <Link key="root" underline="hover" color="inherit" onClick={() => setParentId(null)} sx={{ cursor: 'pointer' }}>
-                    {t('container.root')}
+                    {config?.household_name || t('container.root')}
                   </Link>,
                   ...chain.map((c, idx) => (
                     <Link
@@ -178,7 +180,7 @@ const ContainerOverview: React.FC = () => {
             mx: 'auto'
           }}
           >
-            <Typography variant="h6" sx={{ mb: 2 }}>{t('common.containers', 'Container')}</Typography>
+            <Typography variant="h6" sx={{ mb: 2, pl: { xs: 0, md: 2 } }}>{t('common.containers', 'Container')}</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <Masonry
                 columns={{ sm: 1, md: 2 }}
@@ -207,7 +209,7 @@ const ContainerOverview: React.FC = () => {
         {/* Groceries in current container */}
         {parentContainer && groceriesInContainer.length > 0 && (
           <Box sx={{ width: '100%', maxWidth: { xs: '100%', md: '95%' }, mt: 1 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>{t('common.groceries', 'Groceries')}</Typography>
+            <Typography variant="h6" sx={{ mb: 2, pl: { xs: 0, md: 2 } }}>{t('common.groceries', 'Groceries')}</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <Masonry columns={{ sm: 1, md: 2 }} spacing={1} sx={{ width: '95%', px: 2 }}>
                 {/* Group groceries by product_id for GroceryItemCard */}

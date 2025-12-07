@@ -14,13 +14,13 @@ export interface BottomNavProps {
 }
 
 /**
- * BottomNav component renders a fixed bottom navigation bar with three navigation actions:
- * Shopping Lists, CookieDoo Import, and Pantry Overview.
+ * BottomNav component renders a fixed bottom navigation bar for mobile devices.
+ * Provides quick access to main app sections: Shopping Lists, CookieDoo Import, and Pantry.
+ * Settings are accessed via the logo in TopAppBar on mobile.
  *
  * @param {BottomNavProps} props - The props for the BottomNav component.
  * @param {number} props.value - The currently selected navigation index.
  * @param {(event: React.SyntheticEvent, newValue: number) => void} props.onChange - Callback fired when the navigation value changes.
- *
  */
 export const BottomNav: React.FC<BottomNavProps> = ({ value, onChange }) => {
   const { t } = useTranslation();

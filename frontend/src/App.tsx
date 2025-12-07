@@ -5,32 +5,48 @@ import { TopAppBar } from './ui/components/nav/TopAppBar';
 import { BottomNav } from './ui/components/nav/BottomNav';
 import { SideDrawer } from './ui/components/nav/SideDrawer';
 import PantryPage from './ui/pages/PantryPage';
+import SettingsPage from './ui/pages/SettingsPage';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
+import { useLanguageSync } from './ui/hooks/useLanguageSync';
 
 function AppContent() {
   const [nav, setNav] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  // Sync i18n language with app config
+  useLanguageSync();
 
   const handleLogoClick = () => {
-    if (!isMobile) setDrawerOpen(true);
+    if (isMobile) {
+      setSettingsOpen(true);
+    } else {
+      setDrawerOpen(true);
+    }
   };
 
   let content: React.ReactNode;
-  switch (nav) {
-    case 0:
-      content = <Typography variant="h5" align="center">Shopping Lists (Coming soon)</Typography>;
-      break;
-    case 1:
-      content = <Typography variant="h5" align="center">CookieDoo Import (Coming soon)</Typography>;
-      break;
-    case 2:
-      content = <PantryPage />;
-      break;
-    default:
-      content = null;
+  
+  // Show settings if settings state is open (mobile) or nav is 3 (desktop drawer)
+  if (settingsOpen || nav === 3) {
+    content = <SettingsPage onClose={() => { setSettingsOpen(false); setNav(2); }} />;
+  } else {
+    switch (nav) {
+      case 0:
+        content = <Typography variant="h5" align="center">Shopping Lists (Coming soon)</Typography>;
+        break;
+      case 1:
+        content = <Typography variant="h5" align="center">CookieDoo Import (Coming soon)</Typography>;
+        break;
+      case 2:
+        content = <PantryPage />;
+        break;
+      default:
+        content = null;
+    }
   }
 
   return (

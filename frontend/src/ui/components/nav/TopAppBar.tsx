@@ -11,7 +11,7 @@ interface TopAppBarProps {
 
 /**
  * TopAppBar component renders a fixed application bar at the top of the page.
- * It displays the Grocodex logo and the application title.
+ * It displays the Grocodex logo, the application title, and the household name.
  *
  * @param {object} props - The props for TopAppBar.
  * @param {() => void} [props.onLogoClick] - Callback fired when the logo is clicked.
@@ -21,6 +21,7 @@ interface TopAppBarProps {
 export const TopAppBar: React.FC<TopAppBarProps> = (props) => {
   const { onLogoClick } = props;
   const theme = useTheme();
+  
   return (
     <AppBar position="fixed" color="default" elevation={1} sx={{ zIndex: theme.zIndex.drawer + 1 }}>
       <Toolbar sx={{ height: { xs: 56, sm: 56, md: 64 }, px: 2 }}>

@@ -2,6 +2,14 @@
 
 ## Tables
 
+### app_config (singleton)
+- id (PK, always 'config')
+- household_name
+- language (ISO language code, e.g., 'en', 'de')
+- ai_token (nullable, for future AI integrations)
+- created_at
+- updated_at
+
 ### container
 - id (PK)
 - name
