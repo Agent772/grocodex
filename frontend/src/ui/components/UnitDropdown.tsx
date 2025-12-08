@@ -17,7 +17,7 @@ export const UnitDropdown: React.FC<UnitDropdownProps> = ({ value, onChange, lab
   return (
     <TextField
       select
-      label={getUnitLabel(value, t)}
+      label={label || getUnitLabel(value, t)}
       value={value}
       onChange={e => onChange(e.target.value)}
       sx={sx}

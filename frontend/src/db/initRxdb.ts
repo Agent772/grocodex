@@ -2,6 +2,7 @@ import { createRxDatabase, addRxPlugin, RxDatabase, RxCollectionCreator } from '
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 //import { addCreatedAtHook, addUpdatedAtHook } from './hooks/timestampHooks';
 //import { addRestQuantityDefaultHook } from './hooks/groceryItemHooks';
+import { addShoppingListTimestampHooks, addShoppingListItemHooks } from './hooks/logic/shoppingListDBHooks';
 import { GrocodexCollections } from '../types/dbCollections';
 import appConfigSchema from './schemas/app_config.schema';
 import containerSchema from './schemas/container.schema';
@@ -16,6 +17,7 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 // Add RxDB plugins as needed
@@ -23,6 +25,7 @@ import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBMigrationSchemaPlugin);
+addRxPlugin(RxDBQueryBuilderPlugin);
 // No addRxPlugin for replication-couchdb, use replicateCouchDB directly for sync
 
 export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
@@ -48,6 +51,13 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
             ...oldDoc,
             fuzzy_match_threshold: 0.7
           };
+        },
+        2: (oldDoc: any) => {
+          // Add current_shopping_list_id field
+          return {
+            ...oldDoc,
+            current_shopping_list_id: null
+          };
         }
       }
     },
@@ -58,7 +68,25 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
     product: { schema: productSchema },
     grocery_item: { schema: groceryItemSchema },
     shopping_list: { schema: shoppingListSchema },
-    shopping_list_item: { schema: shoppingListItemSchema }
+    shopping_list_item: { 
+      schema: shoppingListItemSchema,
+      migrationStrategies: {
+        1: (oldDoc: any) => {
+          // Add completed field with default value false
+          return {
+            ...oldDoc,
+            completed: false
+          };
+        },
+        2: (oldDoc: any) => {
+          // Add count field with default value 1
+          return {
+            ...oldDoc,
+            count: 1
+          };
+        }
+      }
+    }
   };
 
   // Add collections and hooks
@@ -66,15 +94,16 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
     if (!db.collections[name as keyof GrocodexCollections]) {
       await db.addCollections({ [name]: config });
     }
-    // const collection = db.collections[name];
-    // if (collection) {
-    //   addCreatedAtHook(collection);
-    //   addUpdatedAtHook(collection);
-    //   // Add rest_quantity default hook for grocery_item collection
-    //   if (name === 'grocery_item') {
-    //     addRestQuantityDefaultHook(collection, db);
-    //   }
-    // }
+    const collection = db.collections[name as keyof GrocodexCollections];
+    if (collection) {
+      // Add shopping list hooks
+      if (name === 'shopping_list') {
+        addShoppingListTimestampHooks(collection as any);
+      }
+      if (name === 'shopping_list_item') {
+        addShoppingListItemHooks(collection as any, db);
+      }
+    }
   }
 
   // Initialize default config if it doesn't exist
@@ -87,6 +116,7 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
       language: 'en', // Default to English
       ai_token: null,
       fuzzy_match_threshold: 0.7, // Default threshold for import matching
+      current_shopping_list_id: null,
       created_at: now,
       updated_at: now
     });

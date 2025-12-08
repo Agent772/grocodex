@@ -130,3 +130,16 @@ export function useUpdateAIToken() {
 
   return { updateAIToken };
 }
+
+/**
+ * Hook to update current shopping list ID
+ */
+export function useUpdateCurrentShoppingList() {
+  const { updateConfig } = useUpdateAppConfig();
+
+  const updateCurrentShoppingList = async (listId: string | null) => {
+    await updateConfig({ current_shopping_list_id: listId });
+  };
+
+  return { updateCurrentShoppingList };
+}

@@ -5,7 +5,7 @@ import { ShoppingListItemDocType } from '../../types/dbCollections';
 const shoppingListItemSchema: RxJsonSchema<ShoppingListItemDocType> = {
   title: 'shopping_list_item',
   description: 'Item in a shopping list',
-  version: 0,
+  version: 2,
   type: 'object',
   primaryKey: 'id',
   properties: {
@@ -15,12 +15,14 @@ const shoppingListItemSchema: RxJsonSchema<ShoppingListItemDocType> = {
     name: { type: 'string', maxLength: 200 },
     unit: { type: 'string', maxLength: 3 },
     quantity: { type: 'number' },
+    count: { type: 'number', default: 1 },
+    completed: { type: 'boolean', default: false },
     comment: { type: 'string', maxLength: 500 },
     image_url: { type: 'string', maxLength: 500 },
     created_at: { type: 'string', format: 'date-time' },
     updated_at: { type: 'string', format: 'date-time' }
   },
-  required: ['id', 'shopping_list_id', 'name', 'quantity', 'unit', 'created_at', 'updated_at'],
+  required: ['id', 'shopping_list_id', 'name', 'quantity', 'unit', 'count', 'completed', 'created_at', 'updated_at'],
   indexes: ['shopping_list_id', 'name'],
   additionalProperties: false
 };

@@ -15,6 +15,7 @@ Grocodex is a self-hosted, open source, privacy-first PWA for tracking grocery i
 - Ensure the app is production-ready with proper error handling and user feedback.
 - Ensure a maintainable and modular code structure.
 - Ensure i18n support for localization.
+- When finishing a edit, ensure its a clean edit with all problems fixed.
 
 ## Frontend
 - Use React functional components.

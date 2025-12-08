@@ -1,5 +1,5 @@
-import React, { use, useState } from 'react';
-import { CssBaseline, useMediaQuery, Box, Typography, Button, Snackbar } from '@mui/material';
+import React, { useState } from 'react';
+import { CssBaseline, useMediaQuery, Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TopAppBar } from './ui/components/nav/TopAppBar';
 import { BottomNav } from './ui/components/nav/BottomNav';
@@ -7,6 +7,7 @@ import { SideDrawer } from './ui/components/nav/SideDrawer';
 import PantryPage from './ui/pages/PantryPage';
 import SettingsPage from './ui/pages/SettingsPage';
 import ImportPage from './ui/pages/ImportPage';
+import ShoppingListPage from './ui/pages/ShoppingListPage';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { useLanguageSync } from './ui/hooks/useLanguageSync';
@@ -37,7 +38,7 @@ function AppContent() {
   } else {
     switch (nav) {
       case 0:
-        content = <Typography variant="h5" align="center">Shopping Lists (Coming soon)</Typography>;
+        content = <ShoppingListPage />;
         break;
       case 1:
         content = <ImportPage />;
