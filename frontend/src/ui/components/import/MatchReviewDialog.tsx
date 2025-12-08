@@ -32,7 +32,8 @@ interface MatchReviewDialogProps {
   matchResult: MatchResult | null;
   onClose: () => void;
   onConfirm: (result: MatchResult, selectedProduct?: ProductDocType) => void;
-  onSkip?: () => void;
+  renderInDialog?: boolean;
+  onChange?: (result: MatchResult, selectedProduct: ProductDocType | null) => void;
 }
 
 /**
@@ -44,7 +45,8 @@ const MatchReviewDialog: React.FC<MatchReviewDialogProps> = ({
   matchResult,
   onClose,
   onConfirm,
-  onSkip,
+  renderInDialog = true,
+  onChange,
 }) => {
   const { t } = useTranslation();
   const db = useRxDB();
@@ -71,6 +73,13 @@ const MatchReviewDialog: React.FC<MatchReviewDialogProps> = ({
     }
   }, [matchResult]);
 
+  // Notify parent of changes when embedded
+  useEffect(() => {
+    if (!renderInDialog && onChange && matchResult) {
+      onChange(matchResult, selectedProduct);
+    }
+  }, [selectedProduct, renderInDialog, onChange, matchResult]);
+
   if (!matchResult) return null;
 
   const { parsedItem, matchedProduct, suggestions, confidence, matchType } = matchResult;
@@ -90,26 +99,20 @@ const MatchReviewDialog: React.FC<MatchReviewDialogProps> = ({
     onClose();
   };
 
-  const handleSkip = () => {
-    if (onSkip) {
-      onSkip();
-    }
-    setSelectedProduct(null);
-    onClose();
-  };
-
   const handleCancel = () => {
     setSelectedProduct(null);
     onClose();
   };
 
-  return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {t('import.reviewMatch', 'Review Match')}
-      </DialogTitle>
+  const content = (
+    <>
+      {renderInDialog && (
+        <DialogTitle>
+          {t('import.reviewMatch', 'Review Match')}
+        </DialogTitle>
+      )}
 
-      <DialogContent>
+      <DialogContent sx={{ pt: renderInDialog ? 2 : 1 }}>
         {/* Parsed Item Info - Enhanced */}
         <Box sx={{ mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -152,10 +155,10 @@ const MatchReviewDialog: React.FC<MatchReviewDialogProps> = ({
         </Typography>
 
         <Autocomplete
-          options={allProducts}
+          options={[...allProducts]}
           value={selectedProduct}
           onChange={(_, newValue) => setSelectedProduct(newValue)}
-          getOptionLabel={(option) => `${option.name} - ${option.quantity} ${option.unit}`}
+          getOptionLabel={(option) => option ? `${option.name} - ${option.quantity} ${option.unit}` : t('import.noMatch', 'No match')}
           renderOption={(props, option) => {
             const isMatched = matchedProduct?.id === option.id;
             return (
@@ -177,24 +180,21 @@ const MatchReviewDialog: React.FC<MatchReviewDialogProps> = ({
           renderInput={(params) => (
             <TextField
               {...params}
-              placeholder="Search products..."
+              placeholder={t('import.searchOrSelectNoMatch', 'Search products or leave empty for no match...')}
               variant="outlined"
             />
           )}
+          clearOnEscape
           sx={{ mb: 2 }}
         />
 
       </DialogContent>
 
-      <DialogActions>
+      {renderInDialog && (
+        <DialogActions>
         <Button onClick={handleCancel} color="inherit">
           {t('common.cancel', 'Cancel')}
         </Button>
-        {onSkip && (
-          <Button onClick={handleSkip} color="warning">
-            {t('import.skipItem', 'Skip Item')}
-          </Button>
-        )}
         <Button
           onClick={handleConfirm}
           variant="contained"
@@ -203,8 +203,18 @@ const MatchReviewDialog: React.FC<MatchReviewDialogProps> = ({
         >
           {t('import.confirmMatch', 'Confirm Match')}
         </Button>
-      </DialogActions>
+        </DialogActions>
+      )}
+
+    </>
+  );
+
+  return renderInDialog ? (
+    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
+      {content}
     </Dialog>
+  ) : (
+    content
   );
 };
 
