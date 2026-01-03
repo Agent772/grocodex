@@ -65,7 +65,18 @@ export async function initRxdb(): Promise<RxDatabase<GrocodexCollections>> {
     supermarket: { schema: supermarketSchema },
     supermarket_product: { schema: supermarketProductSchema },
     product_group: { schema: productGroupSchema },
-    product: { schema: productSchema },
+    product: { 
+      schema: productSchema,
+      migrationStrategies: {
+        1: (oldDoc: any) => {
+          // Add preferred_container_id field with null default
+          return {
+            ...oldDoc,
+            preferred_container_id: null
+          };
+        }
+      }
+    },
     grocery_item: { schema: groceryItemSchema },
     shopping_list: { schema: shoppingListSchema },
     shopping_list_item: { 

@@ -202,12 +202,19 @@ const GroceryItemAddDialog: React.FC<GroceryItemAddDialogProps> = ({ open, onClo
       setProductGroupDisabled(true);
     }
 
-    // Prefill container if a grocery item exists for this product
+    // Prefill container: prioritize learned preference, fallback to existing item
     if (product.id && dbInstance) {
-      const groceryItem = await findGroceryItemByProductId(dbInstance, product.id);
-      if (groceryItem && groceryItem.container_id) {
-        const foundContainer = containerOptions.find(c => c.id === groceryItem.container_id);
+      if (product.preferred_container_id) {
+        // Priority 1: Use learned preferred container
+        const foundContainer = containerOptions.find(c => c.id === product.preferred_container_id);
         if (foundContainer) setContainer(foundContainer);
+      } else {
+        // Priority 2: Fallback to existing grocery item's container if no preference
+        const groceryItem = await findGroceryItemByProductId(dbInstance, product.id);
+        if (groceryItem && groceryItem.container_id) {
+          const foundContainer = containerOptions.find(c => c.id === groceryItem.container_id);
+          if (foundContainer) setContainer(foundContainer);
+        }
       }
     }
   };

@@ -14,7 +14,9 @@ import BarcodeScannerDialog from '../BarcodeScannerDialog';
 import SaveIcon from '@mui/icons-material/Save';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import CloseIcon from '@mui/icons-material/Close';
-import { ProductDocType, ProductGroupDocType } from '../../../types/dbCollections';
+import { ProductDocType, ProductGroupDocType, ContainerDocType } from '../../../types/dbCollections';
+import { useContainerSearch } from '../../hooks/useContainerSearch';
+import { ContainerBreadcrumbLabel, getContainerBreadcrumbLabel } from '../containers/ContainerBreadcrumbLabel';
 
 type ProductGroupOption = ProductGroupDocType | { name: string; isNew: boolean };
 
@@ -39,6 +41,8 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
   const [imageUrl, setImageUrl] = useState(product?.image_url || '');
   const [imagePreview, setImagePreview] = useState<string | undefined>(product?.image_url);
   const [imageBlob, setImageBlob] = useState<Blob | undefined>(undefined);
+  const [container, setContainer] = useState<ContainerDocType | null>(null);
+  const { containers: containerOptions } = useContainerSearch();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
@@ -74,8 +78,17 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
           setProductGroupInput(foundGroup.name);
         }
       }
+      // Set preferred container
+      if (product.preferred_container_id && containerOptions.length > 0) {
+        const foundContainer = containerOptions.find(c => c.id === product.preferred_container_id);
+        if (foundContainer) {
+          setContainer(foundContainer);
+        }
+      } else {
+        setContainer(null);
+      }
     }
-  }, [product, productGroupOptions]);
+  }, [product, productGroupOptions, containerOptions]);
 
   // Product group autocomplete logic
   useEffect(() => {
@@ -118,6 +131,7 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
         brand,
         image_url: imagePreview || imageUrl,
         product_group_id: group.id,
+        preferred_container_id: container ? container.id : null,
         updated_at: new Date().toISOString(),
       });
       if (onSaved) onSaved();
@@ -223,6 +237,26 @@ const ProductEditDialog: React.FC<ProductEditDialogProps> = ({ open, product, on
             value={brand}
             onChange={e => setBrand(e.target.value)}
             fullWidth
+          />
+          {/* Preferred Container */}
+          <Autocomplete
+            options={containerOptions}
+            getOptionLabel={option => getContainerBreadcrumbLabel(option, containerOptions, t)}
+            value={container}
+            onChange={(_, value) => setContainer(value)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <ContainerBreadcrumbLabel container={option} containerOptions={containerOptions} />
+              </li>
+            )}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label={t('product.preferredContainer', 'Preferred Container / Location')}
+                fullWidth
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
           />
           {/* Image upload UI from ContainerNewEdit */}
             <Box display="flex" alignItems="center" justifyContent="center" gap={2}>

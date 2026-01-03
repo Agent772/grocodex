@@ -5,7 +5,7 @@ import { ProductDocType } from '../../types/dbCollections';
 const productSchema: RxJsonSchema<ProductDocType> = {
   title: 'product',
   description: 'Product entity',
-  version: 0,
+  version: 1,
   type: 'object',
   primaryKey: 'id',
   properties: {
@@ -18,6 +18,7 @@ const productSchema: RxJsonSchema<ProductDocType> = {
     quantity: { type: 'number' },
     image_url: { type: 'string', maxLength: 500 },
     supermarket_location_id: { type: 'string', maxLength: 100 },
+    preferred_container_id: { type: ['string', 'null'], maxLength: 100 },
     created_at: { type: 'string', format: 'date-time' },
     updated_at: { type: 'string', format: 'date-time' }
   },

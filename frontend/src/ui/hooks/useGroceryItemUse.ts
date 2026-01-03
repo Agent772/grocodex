@@ -1,8 +1,10 @@
 import { GroceryItemDocType } from '../../types/dbCollections';
 import { useRxDB } from 'rxdb-hooks';
+import { useProductActions } from './useProductActions';
 
 export function useGroceryItemUse(groceryItems: GroceryItemDocType[]) {
   const db = useRxDB();
+  const { syncProductPreferredContainer } = useProductActions();
 
   // Use the first item for updating opened state/flag
   // const mainItem = groceryItems[0];
@@ -10,6 +12,8 @@ export function useGroceryItemUse(groceryItems: GroceryItemDocType[]) {
   const useItem = async (usedAmount: number) => {
     if (!db) return;
     let remaining = usedAmount;
+    const affectedProducts = new Set<string>(); // Track products that need sync
+    
     // Sort by: least rest_quantity, earlier opened, closest expiration date
     const sortedItems = [...groceryItems].sort((a, b) => {
       // 1. Least rest_quantity
@@ -37,6 +41,7 @@ export function useGroceryItemUse(groceryItems: GroceryItemDocType[]) {
         const newRest = currentRest - toUse;
         if (newRest <= 0) {
           // Delete the grocery item if depleted
+          affectedProducts.add(item.product_id);
           await doc.remove();
         } else {
           await doc.update({
@@ -50,6 +55,11 @@ export function useGroceryItemUse(groceryItems: GroceryItemDocType[]) {
         remaining -= toUse;
       }
     }
+    
+    // Sync preferred container for all affected products (fire-and-forget)
+    affectedProducts.forEach(product_id => {
+      syncProductPreferredContainer(product_id);
+    });
   };
 
   return { useItem };

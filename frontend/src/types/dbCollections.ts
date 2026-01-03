@@ -57,6 +57,7 @@ export interface ProductDocType {
   quantity: number;
   image_url?: string;
   supermarket_location_id?: string;
+  preferred_container_id?: string | null;
   created_at?: string;
   updated_at?: string;
 }
