@@ -107,7 +107,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onClose }) => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
         {isMobile && onClose && (
           <IconButton onClick={onClose} aria-label="back">
             <ArrowBack />
@@ -118,7 +118,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onClose }) => {
         </Typography>
       </Box>
 
-      <Paper sx={{ p: 3, mt: 3 }}>
+      <Paper sx={{ p: 3, mt: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Security Notice */}
           <Alert severity="info" variant="outlined">

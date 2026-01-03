@@ -208,14 +208,14 @@ const ShoppingListPage: React.FC = () => {
           flexDirection: 'column',
         }}
       >
-        <Typography variant="h5" component="h1" gutterBottom align="center">
+        <Typography variant="h5" component="h1" gutterBottom align="left">
           {t('shoppingList.title')}
         </Typography>
 
         {/* List Selector */}
         <Box sx={{ display: 'flex', gap: 1, mb: 3, alignItems: 'stretch' }}>
           <Autocomplete
-            value={selectedList || null}
+            value={selectedList || undefined}
             onChange={(_, newValue) => handleListChange(newValue || undefined)}
             options={shoppingLists}
             getOptionLabel={(option) => option.name}
